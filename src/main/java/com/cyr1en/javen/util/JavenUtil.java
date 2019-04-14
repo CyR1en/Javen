@@ -45,7 +45,6 @@ public class JavenUtil {
     HttpURLConnection httpURLConnection = buildConnection(url);
     try {
       int responseCode = httpURLConnection.getResponseCode();
-      System.out.println(url.toString() + ": " + responseCode);
       return responseCode == HttpURLConnection.HTTP_OK;
     } catch (IOException e) {
       e.printStackTrace();

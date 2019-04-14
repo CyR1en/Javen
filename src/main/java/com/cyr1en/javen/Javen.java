@@ -36,7 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -48,13 +50,13 @@ import java.util.stream.Collectors;
 public class Javen {
 
   public static final Logger LOGGER;
-  private static final Method ADD_URL;
+  private static final Method ADD_URL_METHOD;
 
   static {
     try {
-      LOGGER = LoggerFactory.getLogger(Javen.class);
-      ADD_URL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-      ADD_URL.setAccessible(true);
+      LOGGER = LoggerFactory.getLogger("Javen");
+      ADD_URL_METHOD = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+      ADD_URL_METHOD.setAccessible(true);
     } catch (NoSuchMethodException e) {
       throw new RuntimeException(e);
     }
@@ -70,9 +72,25 @@ public class Javen {
     libsDir = new LibDirectory(libPath.toString());
   }
 
+  public void loadDependencies(URLClassLoader classLoader) {
+    downloadNeededDeps();
+    File[] jars = libsDir.listJarFiles();
+    try {
+      for (File jar : jars) {
+        URL url = jar.toURI().toURL();
+        ADD_URL_METHOD.invoke(classLoader, url);
+        LOGGER.info("Successfully loaded: " + url);
+      }
+    } catch (IllegalAccessException | InvocationTargetException | MalformedURLException e) {
+      e.printStackTrace();
+    }
+  }
+
   public void downloadNeededDeps() {
     Map<Dependency, URL> need = getDepsToDownload();
     need.forEach((dep, url) -> {
+      if (libsDir.containsDiffVersionOf(dep))
+        libsDir.deleteDifferentVersion(dep);
       int size = JavenUtil.getFileSizeKB(url);
       try (BufferedInputStream inputStream = new BufferedInputStream(url.openStream());
            FileOutputStream fileOS = new FileOutputStream(new File(libsDir, dep.asJarName()));
@@ -117,10 +135,6 @@ public class Javen {
   public void addRepository(String id, String url) {
     Repository repo = new Repository(id, url);
     addRepository(repo);
-  }
-
-  public void loadDependencies() {
-
   }
 
   public LibDirectory getLibsDir() {

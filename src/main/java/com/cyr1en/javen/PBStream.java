@@ -44,8 +44,8 @@ public class PBStream extends PrintStream {
   @Override
   public void print(String s) {
     if (!FastStrings.isBlank(s)) {
-      //String removedETA = ETA_MATCHER.matcher(s).replaceAll("");
-      LOGGER.info(s);
+      String removedETA = ETA_MATCHER.matcher(s).replaceAll("");
+      LOGGER.info(removedETA);
     }
   }
 }

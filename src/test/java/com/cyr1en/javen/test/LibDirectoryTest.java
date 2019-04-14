@@ -82,7 +82,7 @@ public class LibDirectoryTest {
     Assertions.assertThat(nonAtomic.listJarFilesMatching(validDependency).length > 1).isTrue();
 
     Dependency oldDependency = new Dependency("com.github.cyr1en", "flatdb", "1.0.4");
-    Assertions.assertThatCode(() -> nonAtomic.removeOldVersionOf(validDependency)).doesNotThrowAnyException();
+    Assertions.assertThatCode(() -> nonAtomic.deleteDifferentVersion(validDependency)).doesNotThrowAnyException();
     Assertions.assertThat(nonAtomic.containsDependency(oldDependency)).isFalse();
   }
 

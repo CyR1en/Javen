@@ -33,7 +33,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -79,9 +82,9 @@ public class JavenTest {
   @Test
   public void testGetDepsToDownload() {
     Map<Dependency, URL> needToDownload = javen.getDepsToDownload();
-    System.out.println(needToDownload);
-    Assertions.assertThat(needToDownload.size() > 0).isTrue();
-    Assertions.assertThat(needToDownload.get(mavenCentralTarget)).isNotNull();
+    Assertions.assertThat(needToDownload.size()).isEqualTo(2);
+    Assertions.assertThat(needToDownload.containsKey(mavenCentralTarget) &&
+            needToDownload.containsKey(jCenterTarget)).isTrue();
   }
 
   @Test
@@ -90,10 +93,27 @@ public class JavenTest {
     Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
   }
 
+  @Test
+  public void testLoadDeps() {
+    Assertions.assertThatCode(() -> {
+      URLClassLoader cl = (URLClassLoader) javen.getClass().getClassLoader();
+      javen.loadDependencies(cl);
+    }).doesNotThrowAnyException();
+    Assertions.assertThatCode(() -> {
+      Class c = Class.forName("net.dv8tion.jda.core.JDA");
+      Assertions.assertThat(c).isNotNull();
+    }).doesNotThrowAnyException();
+  }
+
   @After
-  public void after() {
+  public void after() throws IOException {
     javen.getLibsDir().deleteDependency(mavenCentralTarget);
     javen.getLibsDir().deleteDependency(jCenterTarget);
+
+    Path backup = Paths.get("src/test/resources/backup/flatdb-1.0.4.jar");
+    Path libsDir = Paths.get("src/test/resources/testLibDir/flatdb-1.0.4.jar");
+    if(!Files.exists(libsDir))
+      Files.copy(backup, libsDir);
   }
 
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")

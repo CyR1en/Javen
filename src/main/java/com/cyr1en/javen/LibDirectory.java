@@ -76,7 +76,7 @@ public class LibDirectory extends File {
     return true;
   }
 
-  public void removeOldVersionOf(Dependency dependency) {
+  public void deleteDifferentVersion(Dependency dependency) {
     File[] match = listJarFilesMatching(dependency);
     if(!(match.length > 1)) return;
 
