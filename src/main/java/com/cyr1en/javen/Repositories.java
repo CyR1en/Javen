@@ -25,7 +25,6 @@
 package com.cyr1en.javen;
 
 import java.util.LinkedHashSet;
-import java.util.stream.Collectors;
 
 public class Repositories extends LinkedHashSet<Repository> {
 
@@ -41,11 +40,5 @@ public class Repositories extends LinkedHashSet<Repository> {
   public void add(String id, String url) {
     Repository repository = new Repository(id, url);
     addRepo(repository);
-  }
-
-  @Override
-  public String toString() {
-    String repos = this.stream().map(Object::toString).collect(Collectors.joining(", "));
-    return "[" + repos + "]";
   }
 }

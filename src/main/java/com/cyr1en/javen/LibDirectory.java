@@ -25,9 +25,12 @@
 package com.cyr1en.javen;
 
 import com.cyr1en.javen.util.FileUtil;
+import com.cyr1en.javen.util.JavenUtil;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.File;
+import java.util.Map;
 
 import static com.cyr1en.javen.Javen.LOGGER;
 
@@ -44,6 +47,18 @@ public class LibDirectory extends File {
     if(!exists())
       prepareDir();
     assertDirectory();
+  }
+
+  public Map<Dependency, File> listDepsToLoad() {
+    File[] files = listFiles();
+    if(files == null) return ImmutableMap.of();
+    ImmutableMap.Builder<Dependency, File> builder = new ImmutableMap.Builder<>();
+    for(Dependency d : JavenUtil.findAllRequestedDeps()) {
+      for (File file : files)
+        if(FileUtil.isJarFile(file) && FileUtil.getSimpleName(file).equals(d.asJarName()))
+          builder.put(d, file);
+    }
+    return builder.build();
   }
 
   public File[] listJarFiles() {
@@ -96,8 +111,10 @@ public class LibDirectory extends File {
       String jarName = FileUtil.getSimpleName(jar);
       if(jarName.equalsIgnoreCase(dependency.asJarName())) {
         boolean b = jar.delete();
-        if(!b)
-          LOGGER.warn("Was not able to delete: " + dependency.asJarName());
+        if(!b) {
+          LOGGER.warn("Was not able to delete {}, deleting on program exit.", dependency.asJarName());
+          jar.deleteOnExit();
+        }
       }
     }
   }

@@ -24,12 +24,28 @@
 
 package com.cyr1en.javen.util;
 
+import com.cyr1en.javen.Dependency;
+import com.cyr1en.javen.annotation.Lib;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import org.atteo.classindex.ClassIndex;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JavenUtil {
+
+  private static List<Dependency> requestedDeps;
+
+  static {
+    requestedDeps = new ArrayList<>();
+    requestedDeps = findAllRequestedDeps();
+  }
 
   public static boolean validURL(String url) {
     try {
@@ -77,5 +93,28 @@ public class JavenUtil {
       httpURLConnection.disconnect();
     }
   }
+
+  public static List<Dependency> findAllRequestedDeps() {
+    if (Iterables.size(ClassIndex.getAnnotated(Lib.class)) == requestedDeps.size())
+      return requestedDeps;
+
+    ImmutableList.Builder<Dependency> builder = new ImmutableList.Builder<>();
+    for (Class<?> c : ClassIndex.getAnnotated(Lib.class)) {
+      for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
+        builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
+    }
+    return builder.build().stream().distinct().collect(Collectors.toList());
+  }
+
+  public static Dependency dependencyByArtifactName(String artifactName) {
+    return findAllRequestedDeps().stream()
+            .filter(d -> d.getName().equals(artifactName)).findFirst().orElse(null);
+  }
+
+  public static Dependency dependencyByFileName(String fileName) {
+    String artifactName = fileName.substring(0, fileName.indexOf("-"));
+    return dependencyByArtifactName(artifactName);
+  }
+
 
 }

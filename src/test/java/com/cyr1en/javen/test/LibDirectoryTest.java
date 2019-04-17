@@ -26,6 +26,8 @@ package com.cyr1en.javen.test;
 
 import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.LibDirectory;
+import com.cyr1en.javen.annotation.Lib;
+import com.google.common.collect.ImmutableMap;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Assert;
@@ -37,28 +39,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.jar.JarFile;
 
+@Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
 public class LibDirectoryTest {
 
   private LibDirectory defaultLib;
   private Dependency validDependency;
   private Dependency invalidDependency;
-  private JarFile[] emptyJarArray;
 
   @Before
   public void before() {
     defaultLib = new LibDirectory();
     validDependency = new Dependency("com.github.cyr1en", "flatdb", "1.0.5");
     invalidDependency = new Dependency("com.github.cyr1en", "test-lib", "0.0.1");
-    emptyJarArray = new JarFile[0];
   }
 
   @Test
   public void testEmpty() {
-    Assert.assertTrue(defaultLib.exists());
-    Assert.assertTrue(defaultLib.isDirectory());
-    Assert.assertArrayEquals(defaultLib.listJarFiles(), emptyJarArray);
+    Assertions.assertThat(defaultLib.exists()).isTrue();
+    Assertions.assertThat(defaultLib.isDirectory()).isTrue();
+    Assertions.assertThat(defaultLib.listDepsToLoad()).isEqualTo(ImmutableMap.of());
   }
 
   @Test
@@ -75,7 +75,7 @@ public class LibDirectoryTest {
             .doesNotThrowAnyException();
     LibDirectory nonAtomic = testLib.get();
     Assertions.assertThat(nonAtomic).isNotNull();
-    Assertions.assertThat(nonAtomic.listJarFiles().length).isEqualTo(2);
+    Assertions.assertThat(nonAtomic.listDepsToLoad().size()).isEqualTo(1);
     Assertions.assertThat(nonAtomic.containsDependency(validDependency)).isTrue();
 
     Assertions.assertThat(nonAtomic.containsDiffVersionOf(validDependency)).isTrue();

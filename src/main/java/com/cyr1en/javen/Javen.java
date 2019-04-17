@@ -24,14 +24,11 @@
 
 package com.cyr1en.javen;
 
-import com.cyr1en.javen.annotation.Lib;
 import com.cyr1en.javen.util.JavenUtil;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
-import org.atteo.classindex.ClassIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,15 +39,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 public class Javen {
 
   public static final Logger LOGGER;
-  private static final Method ADD_URL_METHOD;
+  public static final Method ADD_URL_METHOD;
 
   static {
     try {
@@ -65,20 +61,23 @@ public class Javen {
   private Repositories repositories;
   private URLResolver resolver;
   private LibDirectory libsDir;
+  private Map<Dependency, URLClassLoader> loadedDependency;
 
   public Javen(Path libPath) {
     repositories = new Repositories();
     resolver = new URLResolver(repositories);
     libsDir = new LibDirectory(libPath.toString());
+    loadedDependency = new LinkedHashMap<>();
   }
 
-  public void loadDependencies(URLClassLoader classLoader) {
+  public synchronized void loadDependencies() {
     downloadNeededDeps();
-    File[] jars = libsDir.listJarFiles();
     try {
-      for (File jar : jars) {
-        URL url = jar.toURI().toURL();
-        ADD_URL_METHOD.invoke(classLoader, url);
+      for(Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad().entrySet()) {
+        URL url = entry.getValue().toURI().toURL();
+        URLClassLoader cl = new URLClassLoader(new URL[0], (URLClassLoader) this.getClass().getClassLoader());
+        ADD_URL_METHOD.invoke(cl, url);
+        loadedDependency.put(entry.getKey(), cl);
         LOGGER.info("Successfully loaded: " + url);
       }
     } catch (IllegalAccessException | InvocationTargetException | MalformedURLException e) {
@@ -107,9 +106,19 @@ public class Javen {
     });
   }
 
+  public void unloadDependency(Dependency dependency) {
+    if(!loadedDependency.containsKey(dependency))
+      return;
+    try {
+      loadedDependency.get(dependency).close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   public Map<Dependency, URL> getDepsToDownload() {
     ImmutableMap.Builder<Dependency, URL> builder = new ImmutableMap.Builder<>();
-    findAllRequestedDeps().forEach(d -> {
+    JavenUtil.findAllRequestedDeps().forEach(d -> {
       if (!libsDir.containsDependency(d)) {
         URL resolved = resolver.resolve(d);
         if (resolved != null)
@@ -117,15 +126,6 @@ public class Javen {
       }
     });
     return builder.build();
-  }
-
-  public List<Dependency> findAllRequestedDeps() {
-    ImmutableList.Builder<Dependency> builder = new ImmutableList.Builder<>();
-    ClassIndex.getAnnotated(Lib.class).forEach(c -> {
-      for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
-        builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
-    });
-    return builder.build().stream().distinct().collect(Collectors.toList());
   }
 
   public void addRepository(Repository repository) {

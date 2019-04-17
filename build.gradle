@@ -37,6 +37,7 @@ repositories {
 
 dependencies {
     compile 'org.atteo.classindex:classindex:3.6'
+    annotationProcessor 'org.atteo.classindex:classindex:3.6'
     //compile 'me.lucko:jar-relocator:1.3'
     compile 'com.google.guava:guava:27.1-jre'
     compile group: 'me.tongfei', name: 'progressbar', version: '0.7.1'

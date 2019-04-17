@@ -28,14 +28,16 @@ import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.Javen;
 import com.cyr1en.javen.Repository;
 import com.cyr1en.javen.annotation.Lib;
+import com.cyr1en.javen.util.JavenUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.JarURLConnection;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,19 +64,35 @@ public class JavenTest {
   }
 
   @Test
+  public void test() throws IOException {
+    URL url = new URL("jar:https://jcenter.bintray.com/net/dv8tion/JDA/3.8.3_462/JDA-3.8.3_462.jar!/");
+    JarURLConnection conn = (JarURLConnection) url.openConnection();
+    try {
+      //URLClassLoader loader = new URLClassLoader(new URL[]{url}, this.getClass().getClassLoader());
+      Javen.ADD_URL_METHOD.invoke(this.getClass().getClassLoader(), conn.getURL());
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      e.printStackTrace();
+    }
+    Assertions.assertThatCode(() -> {
+      Class c = Class.forName("net.dv8tion.jda.core.JDA");
+      Assertions.assertThat(c).isNotNull();
+    }).doesNotThrowAnyException();
+  }
+
+  @Test
   public void testContainsJCenter() {
     Assertions.assertThat(javen.getRepositories().contains(jCenterRepo)).isTrue();
   }
 
   @Test
   public void testRequestedIsDistinct() {
-    List<Dependency> requested = javen.findAllRequestedDeps();
+    List<Dependency> requested = JavenUtil.findAllRequestedDeps();
     Assertions.assertThat(requested.size()).isEqualTo(2);
   }
 
   @Test
   public void testRequestedDeps() {
-    List<Dependency> requested = javen.findAllRequestedDeps();
+    List<Dependency> requested = JavenUtil.findAllRequestedDeps();
     Assertions.assertThat(requested.contains(mavenCentralTarget) &&
             requested.contains(jCenterTarget)).isTrue();
   }
@@ -93,17 +111,16 @@ public class JavenTest {
     Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
   }
 
+  /**
   @Test
-  public void testLoadDeps() {
-    Assertions.assertThatCode(() -> {
-      URLClassLoader cl = (URLClassLoader) javen.getClass().getClassLoader();
-      javen.loadDependencies(cl);
-    }).doesNotThrowAnyException();
+  public void testLoadDepsAfterAllTestsAreDone() {
+    Assertions.assertThatCode(() -> javen.loadDependencies()).doesNotThrowAnyException();
     Assertions.assertThatCode(() -> {
       Class c = Class.forName("net.dv8tion.jda.core.JDA");
       Assertions.assertThat(c).isNotNull();
     }).doesNotThrowAnyException();
   }
+   **/
 
   @After
   public void after() throws IOException {
