@@ -25,9 +25,10 @@
 package com.cyr1en.javen;
 
 import com.cyr1en.javen.util.FileUtil;
-import com.google.common.collect.ImmutableList;
+import com.cyr1en.javen.util.JavenUtil;
 
 import java.io.File;
+import java.util.*;
 
 import static com.cyr1en.javen.Javen.LOGGER;
 
@@ -46,28 +47,40 @@ public class LibDirectory extends File {
     assertDirectory();
   }
 
+  public Map<Dependency, File> listDepsToLoad(ClassLoader... classLoaders) {
+    File[] files = listFiles();
+    if(files == null) return Collections.emptyMap();
+    Map<Dependency, File> builder = new HashMap<>();
+    for(Dependency d : JavenUtil.findAllRequestedDeps(classLoaders)) {
+      for (File file : files)
+        if(FileUtil.isJarFile(file) && FileUtil.getSimpleName(file).equals(d.asJarName()))
+          builder.put(d, file);
+    }
+    return builder;
+  }
+
   public File[] listJarFiles() {
     File[] files = listFiles();
     if(files == null) return new File[0];
-    ImmutableList.Builder<File> builder = new ImmutableList.Builder<>();
+    List<File> builder = new ArrayList<>();
     for (File file : files) {
       if(FileUtil.isJarFile(file))
         builder.add(file);
     }
-    return builder.build().toArray(new File[0]);
+    return builder.toArray(new File[0]);
   }
 
   public File[] listJarFilesMatching(Dependency dependency) {
     File[] files = listJarFiles();
     if(files.length == 0) return files;
-    ImmutableList.Builder<File> builder = new ImmutableList.Builder<>();
+    List<File> builder = new ArrayList<>();
     for(File jarFile : files) {
       String jarName = FileUtil.getSimpleName(jarFile).toLowerCase();
       String depName = dependency.getName().toLowerCase();
       if(jarName.equalsIgnoreCase(dependency.asJarName()) || jarName.contains(depName))
         builder.add(jarFile);
     }
-    return builder.build().toArray(new File[0]);
+    return builder.toArray(new File[0]);
   }
 
   public boolean containsDiffVersionOf(Dependency dependency) {
@@ -96,8 +109,10 @@ public class LibDirectory extends File {
       String jarName = FileUtil.getSimpleName(jar);
       if(jarName.equalsIgnoreCase(dependency.asJarName())) {
         boolean b = jar.delete();
-        if(!b)
-          LOGGER.warn("Was not able to delete: " + dependency.asJarName());
+        if(!b) {
+          LOGGER.warn("Was not able to delete {}, deleting on program exit.", dependency.asJarName());
+          jar.deleteOnExit();
+        }
       }
     }
   }

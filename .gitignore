@@ -8,6 +8,7 @@ gradle-app.setting
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # Cache of project
 .gradletasknamecache
@@ -121,4 +122,3 @@ Temporary Items
 .idea/compiler.xml
 .idea/modules.xml
 .idea/modules/
-gradle/wrapper/gradle-wrapper.properties

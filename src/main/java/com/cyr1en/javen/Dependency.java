@@ -81,6 +81,11 @@ public class Dependency {
 
   @Override
   public String toString() {
-    return this.getClass().getSimpleName() + "(" + asURL() + ")";
+    return "Dependency{" +
+            "group='" + group + '\'' +
+            ", name='" + name + '\'' +
+            ", version='" + version + '\'' +
+            '}';
   }
+
 }

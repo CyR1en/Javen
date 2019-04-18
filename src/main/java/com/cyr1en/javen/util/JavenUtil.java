@@ -24,10 +24,17 @@
 
 package com.cyr1en.javen.util;
 
+import com.cyr1en.javen.Dependency;
+import com.cyr1en.javen.annotation.Lib;
+import org.atteo.classindex.ClassIndex;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JavenUtil {
 
@@ -77,5 +84,30 @@ public class JavenUtil {
       httpURLConnection.disconnect();
     }
   }
+
+  public static List<Dependency> findAllRequestedDeps(ClassLoader... classLoaders) {
+    List<Dependency> builder = new ArrayList<>();
+    for (Class<?> c : ClassIndex.getAnnotated(Lib.class)) {
+      for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
+        builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
+    }
+    for(ClassLoader classLoader : classLoaders) {
+      for (Class<?> c : ClassIndex.getAnnotated(Lib.class, classLoader))
+        for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
+          builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
+    }
+    return builder.stream().distinct().collect(Collectors.toList());
+  }
+
+  public static Dependency dependencyByArtifactName(String artifactName) {
+    return findAllRequestedDeps().stream()
+            .filter(d -> d.getName().equals(artifactName)).findFirst().orElse(null);
+  }
+
+  public static Dependency dependencyByFileName(String fileName) {
+    String artifactName = fileName.substring(0, fileName.indexOf("-"));
+    return dependencyByArtifactName(artifactName);
+  }
+
 
 }

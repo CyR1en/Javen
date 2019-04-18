@@ -28,6 +28,7 @@ import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.Javen;
 import com.cyr1en.javen.Repository;
 import com.cyr1en.javen.annotation.Lib;
+import com.cyr1en.javen.util.JavenUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +36,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,13 +68,13 @@ public class JavenTest {
 
   @Test
   public void testRequestedIsDistinct() {
-    List<Dependency> requested = javen.findAllRequestedDeps();
-    Assertions.assertThat(requested.size()).isEqualTo(2);
+    List<Dependency> requested = JavenUtil.findAllRequestedDeps();
+    Assertions.assertThat(requested.size()).isEqualTo(3);
   }
 
   @Test
   public void testRequestedDeps() {
-    List<Dependency> requested = javen.findAllRequestedDeps();
+    List<Dependency> requested = JavenUtil.findAllRequestedDeps();
     Assertions.assertThat(requested.contains(mavenCentralTarget) &&
             requested.contains(jCenterTarget)).isTrue();
   }
@@ -93,17 +93,14 @@ public class JavenTest {
     Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
   }
 
-  @Test
-  public void testLoadDeps() {
-    Assertions.assertThatCode(() -> {
-      URLClassLoader cl = (URLClassLoader) javen.getClass().getClassLoader();
-      javen.loadDependencies(cl);
-    }).doesNotThrowAnyException();
+  public void testLoadDepsAfterAllTestsAreDone() {
+    Assertions.assertThatCode(() -> javen.loadDependencies()).doesNotThrowAnyException();
     Assertions.assertThatCode(() -> {
       Class c = Class.forName("net.dv8tion.jda.core.JDA");
       Assertions.assertThat(c).isNotNull();
     }).doesNotThrowAnyException();
   }
+
 
   @After
   public void after() throws IOException {
@@ -118,6 +115,7 @@ public class JavenTest {
 
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
+  @Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
   @Lib(group = "net.dv8tion", name = "JDA", version = "3.8.3_462")
   private class TestClass {
 
