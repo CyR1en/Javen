@@ -26,11 +26,9 @@ package com.cyr1en.javen;
 
 import com.cyr1en.javen.util.FileUtil;
 import com.cyr1en.javen.util.JavenUtil;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import java.io.File;
-import java.util.Map;
+import java.util.*;
 
 import static com.cyr1en.javen.Javen.LOGGER;
 
@@ -49,40 +47,40 @@ public class LibDirectory extends File {
     assertDirectory();
   }
 
-  public Map<Dependency, File> listDepsToLoad() {
+  public Map<Dependency, File> listDepsToLoad(ClassLoader... classLoaders) {
     File[] files = listFiles();
-    if(files == null) return ImmutableMap.of();
-    ImmutableMap.Builder<Dependency, File> builder = new ImmutableMap.Builder<>();
-    for(Dependency d : JavenUtil.findAllRequestedDeps()) {
+    if(files == null) return Collections.emptyMap();
+    Map<Dependency, File> builder = new HashMap<>();
+    for(Dependency d : JavenUtil.findAllRequestedDeps(classLoaders)) {
       for (File file : files)
         if(FileUtil.isJarFile(file) && FileUtil.getSimpleName(file).equals(d.asJarName()))
           builder.put(d, file);
     }
-    return builder.build();
+    return builder;
   }
 
   public File[] listJarFiles() {
     File[] files = listFiles();
     if(files == null) return new File[0];
-    ImmutableList.Builder<File> builder = new ImmutableList.Builder<>();
+    List<File> builder = new ArrayList<>();
     for (File file : files) {
       if(FileUtil.isJarFile(file))
         builder.add(file);
     }
-    return builder.build().toArray(new File[0]);
+    return builder.toArray(new File[0]);
   }
 
   public File[] listJarFilesMatching(Dependency dependency) {
     File[] files = listJarFiles();
     if(files.length == 0) return files;
-    ImmutableList.Builder<File> builder = new ImmutableList.Builder<>();
+    List<File> builder = new ArrayList<>();
     for(File jarFile : files) {
       String jarName = FileUtil.getSimpleName(jarFile).toLowerCase();
       String depName = dependency.getName().toLowerCase();
       if(jarName.equalsIgnoreCase(dependency.asJarName()) || jarName.contains(depName))
         builder.add(jarFile);
     }
-    return builder.build().toArray(new File[0]);
+    return builder.toArray(new File[0]);
   }
 
   public boolean containsDiffVersionOf(Dependency dependency) {

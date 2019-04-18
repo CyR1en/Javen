@@ -26,8 +26,6 @@ package com.cyr1en.javen.test;
 
 import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.LibDirectory;
-import com.cyr1en.javen.annotation.Lib;
-import com.google.common.collect.ImmutableMap;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Assert;
@@ -38,9 +36,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
 public class LibDirectoryTest {
 
   private LibDirectory defaultLib;
@@ -58,7 +56,7 @@ public class LibDirectoryTest {
   public void testEmpty() {
     Assertions.assertThat(defaultLib.exists()).isTrue();
     Assertions.assertThat(defaultLib.isDirectory()).isTrue();
-    Assertions.assertThat(defaultLib.listDepsToLoad()).isEqualTo(ImmutableMap.of());
+    Assertions.assertThat(defaultLib.listDepsToLoad()).isEqualTo(Collections.emptyMap());
   }
 
   @Test

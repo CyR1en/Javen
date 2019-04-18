@@ -24,10 +24,6 @@
 
 package com.cyr1en.javen.util;
 
-import com.google.common.collect.ImmutableList;
-
-import java.util.Collections;
-import java.util.List;
 import java.util.StringJoiner;
 
 /**
@@ -138,48 +134,4 @@ public class FastStrings {
     return charSequence == null || charSequence.length() == 0;
   }
 
-  public static boolean containsNonPlaneChar(String string) {
-    int length = string.length();
-    return length > string.codePointCount(0, length);
-  }
-
-  private static boolean isPlaneChar(int codePoint) {
-    return codePoint >= 0x0000 && codePoint <= 0xFFFF;
-  }
-
-  public static String removeNonPlaneChar(String str) {
-    if (isBlank(str))
-      return "";
-
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < str.length(); ) {
-      int c = str.codePointAt(i);
-      if (isPlaneChar(c)) {
-        sb.append((char) c);
-        i++;
-      } else {
-        i += 2;
-      }
-    }
-    return sb.toString();
-  }
-
-  public static List<Integer> getIndexOfNonPlaneChars(String str) {
-    if (isBlank(str))
-      return Collections.emptyList();
-
-    ImmutableList.Builder<Integer> builder = new ImmutableList.Builder<>();
-    int npCount = 0;
-    for (int i = 0; i < str.length(); ) {
-      int c = str.codePointAt(i);
-      if (!isPlaneChar(c)) {
-        i += 2;
-        builder.add(i - 2 - npCount);
-        npCount++;
-      } else
-        i++;
-    }
-    return builder.build();
-  }
-  
 }

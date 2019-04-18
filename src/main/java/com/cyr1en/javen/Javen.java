@@ -25,7 +25,6 @@
 package com.cyr1en.javen;
 
 import com.cyr1en.javen.util.JavenUtil;
-import com.google.common.collect.ImmutableMap;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -39,18 +38,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class Javen {
 
-  public static final Logger LOGGER;
+  public static Logger LOGGER;
   public static final Method ADD_URL_METHOD;
 
   static {
     try {
-      LOGGER = LoggerFactory.getLogger("Javen");
       ADD_URL_METHOD = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
       ADD_URL_METHOD.setAccessible(true);
     } catch (NoSuchMethodException e) {
@@ -62,20 +59,23 @@ public class Javen {
   private URLResolver resolver;
   private LibDirectory libsDir;
   private Map<Dependency, URLClassLoader> loadedDependency;
+  private List<ClassLoader> classLoaders;
 
   public Javen(Path libPath) {
+    LOGGER = LoggerFactory.getLogger(this.getClass());
     repositories = new Repositories();
     resolver = new URLResolver(repositories);
     libsDir = new LibDirectory(libPath.toString());
     loadedDependency = new LinkedHashMap<>();
+    classLoaders = new ArrayList<>();
   }
 
   public synchronized void loadDependencies() {
     downloadNeededDeps();
     try {
-      for(Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad().entrySet()) {
+      for(Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad(classLoaders.toArray(new ClassLoader[0])).entrySet()) {
         URL url = entry.getValue().toURI().toURL();
-        URLClassLoader cl = new URLClassLoader(new URL[0], (URLClassLoader) this.getClass().getClassLoader());
+        URLClassLoader cl = (URLClassLoader) this.getClass().getClassLoader();
         ADD_URL_METHOD.invoke(cl, url);
         loadedDependency.put(entry.getKey(), cl);
         LOGGER.info("Successfully loaded: " + url);
@@ -117,15 +117,15 @@ public class Javen {
   }
 
   public Map<Dependency, URL> getDepsToDownload() {
-    ImmutableMap.Builder<Dependency, URL> builder = new ImmutableMap.Builder<>();
-    JavenUtil.findAllRequestedDeps().forEach(d -> {
+    Map<Dependency, URL> deps = new HashMap<>();
+    JavenUtil.findAllRequestedDeps(classLoaders.toArray(new ClassLoader[0])).forEach(d -> {
       if (!libsDir.containsDependency(d)) {
         URL resolved = resolver.resolve(d);
         if (resolved != null)
-          builder.put(d, resolved);
+          deps.put(d, resolved);
       }
     });
-    return builder.build();
+    return deps;
   }
 
   public void addRepository(Repository repository) {
@@ -147,6 +147,10 @@ public class Javen {
 
   public URLResolver getResolver() {
     return this.resolver;
+  }
+
+  public void addClassLoader(ClassLoader... cls) {
+    classLoaders.addAll(Arrays.asList(cls));
   }
 
   private ProgressBar buildDownloadPB(String jarName, int size) {

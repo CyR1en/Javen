@@ -26,8 +26,6 @@ package com.cyr1en.javen.util;
 
 import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.annotation.Lib;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import org.atteo.classindex.ClassIndex;
 
 import java.io.IOException;
@@ -39,13 +37,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JavenUtil {
-
-  private static List<Dependency> requestedDeps;
-
-  static {
-    requestedDeps = new ArrayList<>();
-    requestedDeps = findAllRequestedDeps();
-  }
 
   public static boolean validURL(String url) {
     try {
@@ -94,16 +85,18 @@ public class JavenUtil {
     }
   }
 
-  public static List<Dependency> findAllRequestedDeps() {
-    if (Iterables.size(ClassIndex.getAnnotated(Lib.class)) == requestedDeps.size())
-      return requestedDeps;
-
-    ImmutableList.Builder<Dependency> builder = new ImmutableList.Builder<>();
+  public static List<Dependency> findAllRequestedDeps(ClassLoader... classLoaders) {
+    List<Dependency> builder = new ArrayList<>();
     for (Class<?> c : ClassIndex.getAnnotated(Lib.class)) {
       for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
         builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
     }
-    return builder.build().stream().distinct().collect(Collectors.toList());
+    for(ClassLoader classLoader : classLoaders) {
+      for (Class<?> c : ClassIndex.getAnnotated(Lib.class, classLoader))
+        for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
+          builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
+    }
+    return builder.stream().distinct().collect(Collectors.toList());
   }
 
   public static Dependency dependencyByArtifactName(String artifactName) {

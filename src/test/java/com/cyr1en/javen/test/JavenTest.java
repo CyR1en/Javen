@@ -35,8 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,22 +62,6 @@ public class JavenTest {
   }
 
   @Test
-  public void test() throws IOException {
-    URL url = new URL("jar:https://jcenter.bintray.com/net/dv8tion/JDA/3.8.3_462/JDA-3.8.3_462.jar!/");
-    JarURLConnection conn = (JarURLConnection) url.openConnection();
-    try {
-      //URLClassLoader loader = new URLClassLoader(new URL[]{url}, this.getClass().getClassLoader());
-      Javen.ADD_URL_METHOD.invoke(this.getClass().getClassLoader(), conn.getURL());
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      e.printStackTrace();
-    }
-    Assertions.assertThatCode(() -> {
-      Class c = Class.forName("net.dv8tion.jda.core.JDA");
-      Assertions.assertThat(c).isNotNull();
-    }).doesNotThrowAnyException();
-  }
-
-  @Test
   public void testContainsJCenter() {
     Assertions.assertThat(javen.getRepositories().contains(jCenterRepo)).isTrue();
   }
@@ -87,7 +69,7 @@ public class JavenTest {
   @Test
   public void testRequestedIsDistinct() {
     List<Dependency> requested = JavenUtil.findAllRequestedDeps();
-    Assertions.assertThat(requested.size()).isEqualTo(2);
+    Assertions.assertThat(requested.size()).isEqualTo(3);
   }
 
   @Test
@@ -111,8 +93,6 @@ public class JavenTest {
     Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
   }
 
-  /**
-  @Test
   public void testLoadDepsAfterAllTestsAreDone() {
     Assertions.assertThatCode(() -> javen.loadDependencies()).doesNotThrowAnyException();
     Assertions.assertThatCode(() -> {
@@ -120,7 +100,7 @@ public class JavenTest {
       Assertions.assertThat(c).isNotNull();
     }).doesNotThrowAnyException();
   }
-   **/
+
 
   @After
   public void after() throws IOException {
@@ -135,6 +115,7 @@ public class JavenTest {
 
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
+  @Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
   @Lib(group = "net.dv8tion", name = "JDA", version = "3.8.3_462")
   private class TestClass {
 
