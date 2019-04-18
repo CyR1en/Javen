@@ -78,7 +78,7 @@ public class Javen {
         URLClassLoader cl = (URLClassLoader) this.getClass().getClassLoader();
         ADD_URL_METHOD.invoke(cl, url);
         loadedDependency.put(entry.getKey(), cl);
-        LOGGER.info("Successfully loaded: " + url);
+        LOGGER.info("Successfully loaded: " + entry.getKey().asJarName());
       }
     } catch (IllegalAccessException | InvocationTargetException | MalformedURLException e) {
       e.printStackTrace();
