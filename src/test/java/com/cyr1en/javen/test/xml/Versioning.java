@@ -22,44 +22,39 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.annotation;
+package com.cyr1en.javen.test.xml;
 
-import org.atteo.classindex.IndexAnnotated;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
-import java.lang.annotation.*;
+@XmlType
+public class Versioning {
+  private String release;
+  private String latest;
 
-@IndexAnnotated
-@Repeatable(Libs.class)
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Lib {
+  public String getRelease() {
+    return release;
+  }
 
-  /**
-   * Group of the artifact.
-   *
-   * @return Group of the artifact.
-   */
-  String group();
+  @XmlElement
+  public void setRelease(String release) {
+    this.release = release;
+  }
 
-  /**
-   * Name of the artifact.
-   *
-   * @return Name of the artifact.
-   */
-  String name();
+  public String getLatest() {
+    return latest;
+  }
 
-  /**
-   * Version of artifact.
-   *
-   * @return Version of artifact.
-   */
-  String version();
+  @XmlElement
+  public void setLatest(String latest) {
+    this.latest = latest;
+  }
 
-  /**
-   * If Javen can't resolve your dependency,
-   * provide a direct download URL for the jar file.
-   *
-   * @return Link for the artifact.
-   */
-  String directURL() default "";
+  @Override
+  public String toString() {
+    return "Versioning{" +
+            "release='" + release + '\'' +
+            ", latest='" + latest + '\'' +
+            '}';
+  }
 }

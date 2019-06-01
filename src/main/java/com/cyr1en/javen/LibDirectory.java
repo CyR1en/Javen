@@ -76,7 +76,7 @@ public class LibDirectory extends File {
     List<File> builder = new ArrayList<>();
     for(File jarFile : files) {
       String jarName = FileUtil.getSimpleName(jarFile).toLowerCase();
-      String depName = dependency.getName().toLowerCase();
+      String depName = dependency.getArtifactId().toLowerCase();
       if(jarName.equalsIgnoreCase(dependency.asJarName()) || jarName.contains(depName))
         builder.add(jarFile);
     }

@@ -36,10 +36,16 @@ public class Repository {
 
   private String id;
   private String repositoryURL;
+  private String layout;
 
   public Repository(String id, String repositoryURL) {
+    this(id, repositoryURL, null);
+  }
+
+  public Repository(String id, String repositoryURL, String layout) {
     this.id = id;
     this.repositoryURL = prepareURL(repositoryURL);
+    this.layout = Objects.isNull(layout) ? "default" : layout;
   }
 
   public String getId() {
@@ -48,6 +54,10 @@ public class Repository {
 
   public String getRepositoryURL() {
     return repositoryURL;
+  }
+
+  public String getLayout() {
+    return layout;
   }
 
   private String prepareURL(String s) {
@@ -78,7 +88,6 @@ public class Repository {
     }
     return null;
   }
-
 
   @Override
   public boolean equals(Object o) {

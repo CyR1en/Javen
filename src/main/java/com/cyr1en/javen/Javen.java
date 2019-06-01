@@ -43,11 +43,12 @@ import java.util.*;
 
 public class Javen {
 
-  public static Logger LOGGER;
+  public static final Logger LOGGER;
   public static final Method ADD_URL_METHOD;
 
   static {
     try {
+      LOGGER = LoggerFactory.getLogger(Javen.class);
       ADD_URL_METHOD = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
       ADD_URL_METHOD.setAccessible(true);
     } catch (NoSuchMethodException e) {
@@ -62,7 +63,6 @@ public class Javen {
   private List<ClassLoader> classLoaders;
 
   public Javen(Path libPath) {
-    LOGGER = LoggerFactory.getLogger(this.getClass());
     repositories = new Repositories();
     resolver = new URLResolver(repositories);
     libsDir = new LibDirectory(libPath.toString());
@@ -70,6 +70,19 @@ public class Javen {
     classLoaders = new ArrayList<>();
   }
 
+  public static synchronized void loadDependencies(File[] files) {
+    for (File file : files) {
+      String name = file.getName();
+      URLClassLoader cl = (URLClassLoader) Javen.class.getClassLoader();
+      try {
+        ADD_URL_METHOD.invoke(cl, file.toURI().toURL());
+        LOGGER.info("Successfully loaded: " + name);
+      } catch (IllegalAccessException | InvocationTargetException | MalformedURLException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+  
   public synchronized void loadDependencies() {
     downloadNeededDeps();
     try {

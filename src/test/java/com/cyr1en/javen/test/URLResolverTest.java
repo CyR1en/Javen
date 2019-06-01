@@ -41,11 +41,13 @@ public class URLResolverTest {
 
   private static final URL guavaSample;
   private static final URL brigadierSample;
+  private static final URL enumToYamlSample;
 
   static {
     try {
       guavaSample = new URL("https://repo.maven.apache.org/maven2/com/google/guava/guava/27.1-jre/guava-27.1-jre.jar");
       brigadierSample = new URL("https://libraries.minecraft.net/com/mojang/brigadier/1.0.14/brigadier-1.0.14.jar");
+      enumToYamlSample = new URL("https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar");
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
@@ -63,7 +65,9 @@ public class URLResolverTest {
   @Test
   public void testValidURLResolve() {
     URL resolved = resolver.resolve(new Dependency("com.google.guava", "guava", "27.1-jre"));
+    URL resolved1 = resolver.resolve(new Dependency("de.articdive", "EnumToYAML", "1.0-20190129.130317-1", "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar"));
     assertEquals(guavaSample, resolved);
+    assertEquals(enumToYamlSample, resolved1);
   }
 
   @Test

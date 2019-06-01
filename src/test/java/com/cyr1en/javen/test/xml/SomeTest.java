@@ -22,44 +22,26 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.annotation;
+package com.cyr1en.javen.test.xml;
 
-import org.atteo.classindex.IndexAnnotated;
+import org.junit.Test;
 
-import java.lang.annotation.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.IOException;
+import java.net.URL;
 
-@IndexAnnotated
-@Repeatable(Libs.class)
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Lib {
+public class SomeTest {
 
-  /**
-   * Group of the artifact.
-   *
-   * @return Group of the artifact.
-   */
-  String group();
+  @Test
+  public void testXML() throws JAXBException, IOException {
+    JAXBContext context = JAXBContext.newInstance(MavenMetadata.class);
 
-  /**
-   * Name of the artifact.
-   *
-   * @return Name of the artifact.
-   */
-  String name();
+    Unmarshaller unmarshaller = context.createUnmarshaller();
+    MavenMetadata metaData = (MavenMetadata) unmarshaller.unmarshal(new URL("https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/maven-metadata.xml"));
+    System.out.println(metaData);
+  }
 
-  /**
-   * Version of artifact.
-   *
-   * @return Version of artifact.
-   */
-  String version();
 
-  /**
-   * If Javen can't resolve your dependency,
-   * provide a direct download URL for the jar file.
-   *
-   * @return Link for the artifact.
-   */
-  String directURL() default "";
 }

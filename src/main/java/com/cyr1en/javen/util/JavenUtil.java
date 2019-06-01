@@ -88,20 +88,24 @@ public class JavenUtil {
   public static List<Dependency> findAllRequestedDeps(ClassLoader... classLoaders) {
     List<Dependency> builder = new ArrayList<>();
     for (Class<?> c : ClassIndex.getAnnotated(Lib.class)) {
-      for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
-        builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
+      for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class)) {
+        String url = FastStrings.isBlank(libMeta.directURL()) ? null : libMeta.directURL();
+        builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version(), url));
+      }
     }
-    for(ClassLoader classLoader : classLoaders) {
+    for (ClassLoader classLoader : classLoaders) {
       for (Class<?> c : ClassIndex.getAnnotated(Lib.class, classLoader))
-        for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class))
-          builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version()));
+        for (Lib libMeta : c.getDeclaredAnnotationsByType(Lib.class)) {
+          String url = FastStrings.isBlank(libMeta.directURL()) ? null : libMeta.directURL();
+          builder.add(new Dependency(libMeta.group(), libMeta.name(), libMeta.version(), url));
+        }
     }
     return builder.stream().distinct().collect(Collectors.toList());
   }
 
   public static Dependency dependencyByArtifactName(String artifactName) {
     return findAllRequestedDeps().stream()
-            .filter(d -> d.getName().equals(artifactName)).findFirst().orElse(null);
+            .filter(d -> d.getArtifactId().equals(artifactName)).findFirst().orElse(null);
   }
 
   public static Dependency dependencyByFileName(String fileName) {

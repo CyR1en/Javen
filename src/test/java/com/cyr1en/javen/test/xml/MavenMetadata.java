@@ -22,44 +22,51 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.annotation;
+package com.cyr1en.javen.test.xml;
 
-import org.atteo.classindex.IndexAnnotated;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
-import java.lang.annotation.*;
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "metadata")
+public class MavenMetadata {
+  private String groupId;
+  private String artifactId;
+  private Versioning versioning;
 
-@IndexAnnotated
-@Repeatable(Libs.class)
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Lib {
+  public MavenMetadata() {}
 
-  /**
-   * Group of the artifact.
-   *
-   * @return Group of the artifact.
-   */
-  String group();
+  public Versioning getVersioning() {
+    return versioning;
+  }
 
-  /**
-   * Name of the artifact.
-   *
-   * @return Name of the artifact.
-   */
-  String name();
+  public void setVersioning(Versioning versioning) {
+    this.versioning = versioning;
+  }
 
-  /**
-   * Version of artifact.
-   *
-   * @return Version of artifact.
-   */
-  String version();
+  public String getGroupId() {
+    return groupId;
+  }
 
-  /**
-   * If Javen can't resolve your dependency,
-   * provide a direct download URL for the jar file.
-   *
-   * @return Link for the artifact.
-   */
-  String directURL() default "";
+  public void setGroupId(String groupId) {
+    this.groupId = groupId;
+  }
+
+  public String getArtifactId() {
+    return artifactId;
+  }
+
+  public void setArtifactId(String artifactId) {
+    this.artifactId = artifactId;
+  }
+
+  @Override
+  public String toString() {
+    return "MavenMetadata{" +
+            "groupId='" + groupId + '\'' +
+            ", artifactId='" + artifactId + '\'' +
+            ", versioning=" + versioning +
+            '}';
+  }
 }

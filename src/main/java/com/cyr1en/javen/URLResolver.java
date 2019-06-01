@@ -24,6 +24,7 @@
 
 package com.cyr1en.javen;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 import static com.cyr1en.javen.Javen.LOGGER;
 
 public class URLResolver {
+
+  public static final String UNRESOLVED = "unresolved";
 
   private Repositories repositories;
 
@@ -72,6 +75,12 @@ public class URLResolver {
    * @return {@link URL} if successfully resolved, null if not.
    */
   public URL resolve(Dependency dependency) {
+    if (!dependency.getDirectURL().equals(UNRESOLVED))
+      try {
+        String dUrl = dependency.getDirectURL();
+        return new URL(dUrl);
+      } catch (MalformedURLException ignore) { }
+
     for (Repository repo : repositories)
       if (repo.contains(dependency))
         return repo.getURLOf(dependency);

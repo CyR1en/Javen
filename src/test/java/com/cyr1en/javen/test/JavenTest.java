@@ -50,6 +50,7 @@ public class JavenTest {
 
   private Dependency mavenCentralTarget;
   private Dependency jCenterTarget;
+  private Dependency directURLTarget;
 
   @Before
   public void before() {
@@ -59,6 +60,7 @@ public class JavenTest {
     javen.addRepository(jCenterRepo);
     mavenCentralTarget = new Dependency("com.google.guava", "guava", "27.1-jre");
     jCenterTarget = new Dependency("net.dv8tion", "JDA", "3.8.3_462");
+    directURLTarget = new Dependency("de.articdive", "EnumToYAML", "1.0-20190129.130317-1", "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar");
   }
 
   @Test
@@ -69,7 +71,7 @@ public class JavenTest {
   @Test
   public void testRequestedIsDistinct() {
     List<Dependency> requested = JavenUtil.findAllRequestedDeps();
-    Assertions.assertThat(requested.size()).isEqualTo(3);
+    Assertions.assertThat(requested.size()).isEqualTo(4);
   }
 
   @Test
@@ -82,7 +84,7 @@ public class JavenTest {
   @Test
   public void testGetDepsToDownload() {
     Map<Dependency, URL> needToDownload = javen.getDepsToDownload();
-    Assertions.assertThat(needToDownload.size()).isEqualTo(2);
+    Assertions.assertThat(needToDownload.size()).isEqualTo(3);
     Assertions.assertThat(needToDownload.containsKey(mavenCentralTarget) &&
             needToDownload.containsKey(jCenterTarget)).isTrue();
   }
@@ -106,10 +108,11 @@ public class JavenTest {
   public void after() throws IOException {
     javen.getLibsDir().deleteDependency(mavenCentralTarget);
     javen.getLibsDir().deleteDependency(jCenterTarget);
+    javen.getLibsDir().deleteDependency(directURLTarget);
 
     Path backup = Paths.get("src/test/resources/backup/flatdb-1.0.4.jar");
     Path libsDir = Paths.get("src/test/resources/testLibDir/flatdb-1.0.4.jar");
-    if(!Files.exists(libsDir))
+    if (!Files.exists(libsDir))
       Files.copy(backup, libsDir);
   }
 
@@ -117,6 +120,8 @@ public class JavenTest {
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
   @Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
   @Lib(group = "net.dv8tion", name = "JDA", version = "3.8.3_462")
+  @Lib(group = "de.articdive", name = "EnumToYAML", version = "1.0-20190129.130317-1",
+          directURL = "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar")
   private class TestClass {
 
   }
