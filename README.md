@@ -1,2 +1,2 @@
 # Javen
-Runtime dependency resolver
+Runtime Maven dependency resolver
