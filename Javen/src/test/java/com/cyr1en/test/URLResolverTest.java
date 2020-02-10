@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.test;
+package com.cyr1en.test;
 
 import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.Repositories;

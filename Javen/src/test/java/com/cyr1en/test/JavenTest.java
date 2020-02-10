@@ -22,7 +22,8 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.test;
+package com.cyr1en.test;
+
 
 import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.Javen;
@@ -34,6 +35,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -50,17 +52,18 @@ public class JavenTest {
 
   private Dependency mavenCentralTarget;
   private Dependency jCenterTarget;
-  private Dependency directURLTarget;
 
   @Before
   public void before() {
     Path libsDir = Paths.get("src/test/resources/testLibDir");
-    javen = new Javen(libsDir);
+
+    File agent = new File("src/test/resources/agent/agent.jar");
+    javen = new Javen(libsDir, agent);
+
     jCenterRepo = new Repository("jCenter", "https://jcenter.bintray.com/");
     javen.addRepository(jCenterRepo);
     mavenCentralTarget = new Dependency("com.google.guava", "guava", "27.1-jre");
     jCenterTarget = new Dependency("net.dv8tion", "JDA", "3.8.3_462");
-    directURLTarget = new Dependency("de.articdive", "EnumToYAML", "1.0-20190129.130317-1", "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar");
   }
 
   @Test
@@ -71,7 +74,7 @@ public class JavenTest {
   @Test
   public void testRequestedIsDistinct() {
     List<Dependency> requested = JavenUtil.findAllRequestedDeps();
-    Assertions.assertThat(requested.size()).isEqualTo(4);
+    Assertions.assertThat(requested.size()).isEqualTo(3);
   }
 
   @Test
@@ -84,7 +87,7 @@ public class JavenTest {
   @Test
   public void testGetDepsToDownload() {
     Map<Dependency, URL> needToDownload = javen.getDepsToDownload();
-    Assertions.assertThat(needToDownload.size()).isEqualTo(3);
+    Assertions.assertThat(needToDownload.size()).isEqualTo(2);
     Assertions.assertThat(needToDownload.containsKey(mavenCentralTarget) &&
             needToDownload.containsKey(jCenterTarget)).isTrue();
   }
@@ -95,10 +98,11 @@ public class JavenTest {
     Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
   }
 
+  @Test
   public void testLoadDepsAfterAllTestsAreDone() {
     Assertions.assertThatCode(() -> javen.loadDependencies()).doesNotThrowAnyException();
     Assertions.assertThatCode(() -> {
-      Class c = Class.forName("net.dv8tion.jda.core.JDA");
+      Class<?> c = Class.forName("net.dv8tion.jda.core.JDA");
       Assertions.assertThat(c).isNotNull();
     }).doesNotThrowAnyException();
   }
@@ -108,7 +112,6 @@ public class JavenTest {
   public void after() throws IOException {
     javen.getLibsDir().deleteDependency(mavenCentralTarget);
     javen.getLibsDir().deleteDependency(jCenterTarget);
-    javen.getLibsDir().deleteDependency(directURLTarget);
 
     Path backup = Paths.get("src/test/resources/backup/flatdb-1.0.4.jar");
     Path libsDir = Paths.get("src/test/resources/testLibDir/flatdb-1.0.4.jar");
@@ -118,11 +121,8 @@ public class JavenTest {
 
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
   @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
-  @Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
   @Lib(group = "net.dv8tion", name = "JDA", version = "3.8.3_462")
-  @Lib(group = "de.articdive", name = "EnumToYAML", version = "1.0-20190129.130317-1",
-          directURL = "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar")
+  @Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
   private class TestClass {
-
   }
 }

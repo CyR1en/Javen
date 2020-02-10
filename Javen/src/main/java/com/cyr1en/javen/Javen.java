@@ -44,57 +44,42 @@ import java.util.*;
 public class Javen {
 
   public static final Logger LOGGER;
-  public static final Method ADD_URL_METHOD;
 
   static {
-    try {
-      LOGGER = LoggerFactory.getLogger(Javen.class);
-      ADD_URL_METHOD = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-      ADD_URL_METHOD.setAccessible(true);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
+    LOGGER = LoggerFactory.getLogger(Javen.class);
   }
 
   private Repositories repositories;
   private URLResolver resolver;
   private LibDirectory libsDir;
-  private Map<Dependency, URLClassLoader> loadedDependency;
+  private List<Dependency> loadedDependency;
   private List<ClassLoader> classLoaders;
+  private static Loader loader;
 
   public Javen(Path libPath) {
+    this(libPath, null);
+  }
+
+  public Javen(Path libPath, File agent) {
     repositories = new Repositories();
     resolver = new URLResolver(repositories);
     libsDir = new LibDirectory(libPath.toString());
-    loadedDependency = new LinkedHashMap<>();
+    loadedDependency = new ArrayList<>();
     classLoaders = new ArrayList<>();
+    loader = new Loader(agent);
   }
 
   public static synchronized void loadDependencies(File[] files) {
-    for (File file : files) {
-      String name = file.getName();
-      URLClassLoader cl = (URLClassLoader) Javen.class.getClassLoader();
-      try {
-        ADD_URL_METHOD.invoke(cl, file.toURI().toURL());
-        LOGGER.info("Successfully loaded: " + name);
-      } catch (IllegalAccessException | InvocationTargetException | MalformedURLException e) {
-        e.printStackTrace();
-      }
-    }
+    for (File file : files)
+      loader.addJarToClassPath(file);
   }
-  
+
   public synchronized void loadDependencies() {
     downloadNeededDeps();
-    try {
-      for(Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad(classLoaders.toArray(new ClassLoader[0])).entrySet()) {
-        URL url = entry.getValue().toURI().toURL();
-        URLClassLoader cl = (URLClassLoader) this.getClass().getClassLoader();
-        ADD_URL_METHOD.invoke(cl, url);
-        loadedDependency.put(entry.getKey(), cl);
-        LOGGER.info("Successfully loaded: " + entry.getKey().asJarName());
-      }
-    } catch (IllegalAccessException | InvocationTargetException | MalformedURLException e) {
-      e.printStackTrace();
+    for (Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad(classLoaders.toArray(new ClassLoader[0])).entrySet()) {
+      loader.addJarToClassPath(entry.getValue());
+      loadedDependency.add(entry.getKey());
+      LOGGER.info("Successfully loaded: " + entry.getKey().asJarName());
     }
   }
 
@@ -119,15 +104,6 @@ public class Javen {
     });
   }
 
-  public void unloadDependency(Dependency dependency) {
-    if(!loadedDependency.containsKey(dependency))
-      return;
-    try {
-      loadedDependency.get(dependency).close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
 
   public Map<Dependency, URL> getDepsToDownload() {
     Map<Dependency, URL> deps = new HashMap<>();

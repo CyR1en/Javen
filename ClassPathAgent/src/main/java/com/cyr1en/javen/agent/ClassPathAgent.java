@@ -22,30 +22,31 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen;
+package com.cyr1en.javen.agent;
 
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+import java.util.jar.JarFile;
 
-import com.cyr1en.javen.util.FastStrings;
+public class ClassPathAgent {
+  public static Instrumentation instrumentation;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.regex.Pattern;
-
-import static com.cyr1en.javen.Javen.LOGGER;
-
-public class PBStream extends PrintStream {
-
-  private static final Pattern ETA_MATCHER = Pattern.compile("\\(.*?\\)");
-
-  public PBStream(OutputStream out) {
-    super(out);
+  public static void premain(String args, Instrumentation instrumentation) {
+    ClassPathAgent.instrumentation = instrumentation;
   }
 
-  @Override
-  public void print(String s) {
-    if (!FastStrings.isBlank(s)) {
-      String removedETA = ETA_MATCHER.matcher(s).replaceAll("");
-      LOGGER.info(removedETA);
+  public static void agentmain(String args, Instrumentation instrumentation) {
+    ClassPathAgent.instrumentation = instrumentation;
+    try {
+      ClassPathAgent.appendJarFile(args);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static void appendJarFile(String args) throws IOException {
+    if (instrumentation != null) {
+      instrumentation.appendToSystemClassLoaderSearch(new JarFile(args));
     }
   }
 }

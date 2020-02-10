@@ -22,39 +22,26 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.test.xml;
+package com.cyr1en.javen;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import net.bytebuddy.agent.ByteBuddyAgent;
 
-@XmlType
-public class Versioning {
-  private String release;
-  private String latest;
+import static com.cyr1en.javen.Javen.LOGGER;
 
-  public String getRelease() {
-    return release;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+
+public class Loader {
+
+  private final File AGENT_JAR;
+
+  public Loader(File agent) {
+    AGENT_JAR = agent;
   }
 
-  @XmlElement
-  public void setRelease(String release) {
-    this.release = release;
-  }
-
-  public String getLatest() {
-    return latest;
-  }
-
-  @XmlElement
-  public void setLatest(String latest) {
-    this.latest = latest;
-  }
-
-  @Override
-  public String toString() {
-    return "Versioning{" +
-            "release='" + release + '\'' +
-            ", latest='" + latest + '\'' +
-            '}';
+  public void addJarToClassPath(File jarFile) {
+    String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+    ByteBuddyAgent.attach(AGENT_JAR, pid, jarFile.getPath());
+    LOGGER.info("\u001b[32m"+jarFile.getName() + " loaded. \033[0m");
   }
 }

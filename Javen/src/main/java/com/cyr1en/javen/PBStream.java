@@ -22,16 +22,29 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.test;
+package com.cyr1en.javen;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.regex.Pattern;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        LibDirectoryTest.class,
-        URLResolverTest.class,
-        JavenTest.class
-})
-public class TestSuite {
+import com.cyr1en.javen.util.FastStrings;
+
+import static com.cyr1en.javen.Javen.LOGGER;
+
+public class PBStream extends PrintStream {
+
+  private static final Pattern ETA_MATCHER = Pattern.compile("\\(.*?\\)");
+
+  public PBStream(OutputStream out) {
+    super(out);
+  }
+
+  @Override
+  public void print(String s) {
+    if (!FastStrings.isBlank(s)) {
+      String removedETA = ETA_MATCHER.matcher(s).replaceAll("");
+      LOGGER.info(removedETA);
+    }
+  }
 }

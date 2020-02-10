@@ -23,4 +23,6 @@
  */
 
 rootProject.name = 'Javen'
+include 'ClassPathAgent'
+include 'Javen'
 

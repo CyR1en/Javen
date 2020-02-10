@@ -22,26 +22,16 @@
  * SOFTWARE.
  */
 
-package com.cyr1en.javen.test.xml;
+package com.cyr1en.test;
 
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.IOException;
-import java.net.URL;
-
-public class SomeTest {
-
-  @Test
-  public void testXML() throws JAXBException, IOException {
-    JAXBContext context = JAXBContext.newInstance(MavenMetadata.class);
-
-    Unmarshaller unmarshaller = context.createUnmarshaller();
-    MavenMetadata metaData = (MavenMetadata) unmarshaller.unmarshal(new URL("https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/maven-metadata.xml"));
-    System.out.println(metaData);
-  }
-
-
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        LibDirectoryTest.class,
+        URLResolverTest.class,
+        JavenTest.class
+})
+public class TestSuite {
 }
