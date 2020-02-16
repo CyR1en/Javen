@@ -22,6 +22,16 @@
  * SOFTWARE.
  */
 
-rootProject.name = 'Javen'
-include 'javen-core'
+package com.cyr1en.test;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        URLResolverTest.class,
+        JavenTest.class,
+        LibDirectoryTest.class
+})
+public class TestSuite {
+}
