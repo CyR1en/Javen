@@ -1,10 +1,10 @@
 ### For Testing
 # Avoid ignoring of jars for testing
-!javen-core/src/test/resources/backup/flatdb-1.0.4.jar
-!javen-core/src/test/resources/backup/FlatDB-1.05.jar
-!javen-core/src/test/resources/testLibDir/flatdb-1.0.4.jar
-!javen-core/src/test/resources/testLibDir/FlatDB-1.05.jar
-!javen-core/src/test/resources/DummyFile
+!/javen-core/src/test/resources/backup/flatdb-1.0.4.jar
+!/javen-core/src/test/resources/backup/FlatDB-1.05.jar
+!/javen-core/src/test/resources/testLibDir/flatdb-1.0.4.jar
+!/javen-core/src/test/resources/testLibDir/FlatDB-1.05.jar
+!/javen-core/src/test/resources/DummyFile
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Gradle template
