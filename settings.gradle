@@ -23,6 +23,5 @@
  */
 
 rootProject.name = 'Javen'
-include 'ClassPathAgent'
-include 'Javen'
+include 'javen-core'
 

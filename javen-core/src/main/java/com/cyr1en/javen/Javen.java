@@ -25,25 +25,18 @@
 package com.cyr1en.javen;
 
 import com.cyr1en.javen.util.JavenUtil;
-import me.tongfei.progressbar.ProgressBar;
-import me.tongfei.progressbar.ProgressBarBuilder;
-import me.tongfei.progressbar.ProgressBarStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
+
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.*;
 
-
 public class Javen {
 
-  public static final Logger LOGGER;
+  public static Logger LOGGER;
 
   static {
     LOGGER = LoggerFactory.getLogger(Javen.class);
@@ -52,21 +45,19 @@ public class Javen {
   private Repositories repositories;
   private URLResolver resolver;
   private LibDirectory libsDir;
+  private JarDownloader downloader;
   private List<Dependency> loadedDependency;
   private List<ClassLoader> classLoaders;
   private static Loader loader;
 
   public Javen(Path libPath) {
-    this(libPath, null);
-  }
-
-  public Javen(Path libPath, File agent) {
     repositories = new Repositories();
     resolver = new URLResolver(repositories);
     libsDir = new LibDirectory(libPath.toString());
+    downloader = new JarDownloader(libsDir);
     loadedDependency = new ArrayList<>();
     classLoaders = new ArrayList<>();
-    loader = new Loader(agent);
+    loader = new Loader(this);
   }
 
   public static synchronized void loadDependencies(File[] files) {
@@ -79,7 +70,6 @@ public class Javen {
     for (Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad(classLoaders.toArray(new ClassLoader[0])).entrySet()) {
       loader.addJarToClassPath(entry.getValue());
       loadedDependency.add(entry.getKey());
-      LOGGER.info("Successfully loaded: " + entry.getKey().asJarName());
     }
   }
 
@@ -88,22 +78,9 @@ public class Javen {
     need.forEach((dep, url) -> {
       if (libsDir.containsDiffVersionOf(dep))
         libsDir.deleteDifferentVersion(dep);
-      int size = JavenUtil.getFileSizeKB(url);
-      try (BufferedInputStream inputStream = new BufferedInputStream(url.openStream());
-           FileOutputStream fileOS = new FileOutputStream(new File(libsDir, dep.asJarName()));
-           ProgressBar pb = buildDownloadPB(dep.asJarName(), size)) {
-        byte[] data = new byte[1024];
-        int byteContent;
-        while ((byteContent = inputStream.read(data, 0, 1024)) != -1) {
-          fileOS.write(data, 0, byteContent);
-          pb.step();
-        }
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      downloader.downloadJar(dep, url);
     });
   }
-
 
   public Map<Dependency, URL> getDepsToDownload() {
     Map<Dependency, URL> deps = new HashMap<>();
@@ -138,19 +115,16 @@ public class Javen {
     return this.resolver;
   }
 
+  public void delegateLogger(Logger logger) {
+    LOGGER = logger;
+  }
+
+  public JarDownloader getDownloader() {
+    return this.downloader;
+  }
+
   public void addClassLoader(ClassLoader... cls) {
     classLoaders.addAll(Arrays.asList(cls));
   }
 
-  private ProgressBar buildDownloadPB(String jarName, int size) {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    PBStream pbStream = new PBStream(out);
-    ProgressBarBuilder pbb = new ProgressBarBuilder()
-            .setTaskName("Downloading " + jarName)
-            .setStyle(ProgressBarStyle.ASCII)
-            .setUpdateIntervalMillis(100)
-            .setInitialMax(size)
-            .setPrintStream(pbStream);
-    return pbb.build();
-  }
 }

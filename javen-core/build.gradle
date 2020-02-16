@@ -7,17 +7,13 @@ repositories {
     maven {
         url 'https://repo.typesafe.com/typesafe/maven-releases/'
     }
-    flatDir { dirs 'lib' }
 }
 
 dependencies {
     compile 'org.atteo.classindex:classindex:3.6'
     annotationProcessor 'org.atteo.classindex:classindex:3.6'
-    compile group: 'me.tongfei', name: 'progressbar', version: '0.7.1'
+    compile group: 'me.tongfei', name: 'progressbar', version: '0.8.1'
     compile group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.10.2'
-    compile group: 'org.hyperic', name: 'sigar', version: '1.6.4'
-    //compile name: 'tools'
-
     compileOnly 'org.slf4j:slf4j-api:1.7.25'
 
     testCompile 'org.atteo.classindex:classindex:3.6'

@@ -28,9 +28,11 @@ import com.cyr1en.javen.Dependency;
 import com.cyr1en.javen.LibDirectory;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LibDirectoryTest {
 
   private LibDirectory defaultLib;
@@ -53,27 +56,27 @@ public class LibDirectoryTest {
   }
 
   @Test
-  public void testEmpty() {
+  public void testAEmpty() {
     Assertions.assertThat(defaultLib.exists()).isTrue();
     Assertions.assertThat(defaultLib.isDirectory()).isTrue();
     Assertions.assertThat(defaultLib.listDepsToLoad()).isEqualTo(Collections.emptyMap());
   }
 
   @Test
-  public void testFalseConstruct() {
+  public void testBFalseConstruct() {
     Assertions.assertThatCode(() -> new LibDirectory("src/test/resources/DummyFile"))
             .isInstanceOf(IllegalStateException.class)
             .hasNoCause();
   }
 
   @Test
-  public void testExistingDir() {
+  public void testCExistingDir() {
     AtomicReference<LibDirectory> testLib = new AtomicReference<>();
     Assertions.assertThatCode(() -> testLib.set(new LibDirectory("src/test/resources/testLibDir")))
             .doesNotThrowAnyException();
     LibDirectory nonAtomic = testLib.get();
     Assertions.assertThat(nonAtomic).isNotNull();
-    Assertions.assertThat(nonAtomic.listDepsToLoad().size()).isEqualTo(1);
+    Assertions.assertThat(nonAtomic.listDepsToLoad().size()).isEqualTo(3);
     Assertions.assertThat(nonAtomic.containsDependency(validDependency)).isTrue();
 
     Assertions.assertThat(nonAtomic.containsDiffVersionOf(validDependency)).isTrue();
@@ -85,8 +88,8 @@ public class LibDirectoryTest {
   }
 
   @Test
-  public void testContainsDep() {
-    Assert.assertFalse(defaultLib.containsDependency(invalidDependency));
+  public void testDContainsDep() {
+    Assertions.assertThat(defaultLib.containsDependency(invalidDependency)).isFalse();
   }
 
   @After
@@ -94,7 +97,7 @@ public class LibDirectoryTest {
     defaultLib.deleteOnExit();
     Path backup = Paths.get("src/test/resources/backup/flatdb-1.0.4.jar");
     Path libsDir = Paths.get("src/test/resources/testLibDir/flatdb-1.0.4.jar");
-    if(!Files.exists(libsDir))
+    if (!Files.exists(libsDir))
       Files.copy(backup, libsDir);
   }
 }

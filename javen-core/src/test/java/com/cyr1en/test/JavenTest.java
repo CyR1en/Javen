@@ -33,17 +33,18 @@ import com.cyr1en.javen.util.JavenUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JavenTest {
 
   private Javen javen;
@@ -57,56 +58,52 @@ public class JavenTest {
   public void before() {
     Path libsDir = Paths.get("src/test/resources/testLibDir");
 
-    File agent = new File("src/test/resources/agent/agent.jar");
-    javen = new Javen(libsDir, agent);
+    javen = new Javen(libsDir);
 
     jCenterRepo = new Repository("jCenter", "https://jcenter.bintray.com/");
     javen.addRepository(jCenterRepo);
     mavenCentralTarget = new Dependency("com.google.guava", "guava", "27.1-jre");
     jCenterTarget = new Dependency("net.dv8tion", "JDA", "3.8.3_462");
+
+    if(javen.getLibsDir().containsDependency(mavenCentralTarget)) javen.getLibsDir().deleteDependency(mavenCentralTarget);
+    if(javen.getLibsDir().containsDependency(jCenterTarget)) javen.getLibsDir().deleteDependency(jCenterTarget);
   }
 
   @Test
-  public void testContainsJCenter() {
+  public void testAContainsJCenter() {
     Assertions.assertThat(javen.getRepositories().contains(jCenterRepo)).isTrue();
   }
 
   @Test
-  public void testRequestedIsDistinct() {
+  public void testBRequestedIsDistinct() {
     List<Dependency> requested = JavenUtil.findAllRequestedDeps();
     Assertions.assertThat(requested.size()).isEqualTo(3);
   }
 
   @Test
-  public void testRequestedDeps() {
+  public void testCRequestedDeps() {
     List<Dependency> requested = JavenUtil.findAllRequestedDeps();
     Assertions.assertThat(requested.contains(mavenCentralTarget) &&
             requested.contains(jCenterTarget)).isTrue();
   }
 
   @Test
-  public void testGetDepsToDownload() {
-    Map<Dependency, URL> needToDownload = javen.getDepsToDownload();
-    Assertions.assertThat(needToDownload.size()).isEqualTo(2);
-    Assertions.assertThat(needToDownload.containsKey(mavenCentralTarget) &&
-            needToDownload.containsKey(jCenterTarget)).isTrue();
-  }
-
-  @Test
-  public void testDownloadNeededDeps() {
+  public void testDDownloadNeededDeps() {
     Assertions.assertThatCode(() -> javen.downloadNeededDeps()).doesNotThrowAnyException();
     Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
   }
 
   @Test
-  public void testLoadDepsAfterAllTestsAreDone() {
+  public void testELoadDepsAfterAllTestsAreDone() {
     Assertions.assertThatCode(() -> javen.loadDependencies()).doesNotThrowAnyException();
     Assertions.assertThatCode(() -> {
-      Class<?> c = Class.forName("net.dv8tion.jda.core.JDA");
-      Assertions.assertThat(c).isNotNull();
+      String[] classesToCheck = new String[]{"net.dv8tion.jda.core.JDA", "com.cyr1en.flatdb.annotations.Table"};
+      for(String cS : classesToCheck) {
+        Class<?> c = Class.forName(cS);
+        Assertions.assertThat(c).isNotNull();
+      }
     }).doesNotThrowAnyException();
   }
-
 
   @After
   public void after() throws IOException {

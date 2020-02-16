@@ -29,9 +29,9 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        LibDirectoryTest.class,
         URLResolverTest.class,
-        JavenTest.class
+        JavenTest.class,
+        LibDirectoryTest.class
 })
 public class TestSuite {
 }
