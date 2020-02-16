@@ -76,7 +76,6 @@ public class LibDirectoryTest {
             .doesNotThrowAnyException();
     LibDirectory nonAtomic = testLib.get();
     Assertions.assertThat(nonAtomic).isNotNull();
-    Assertions.assertThat(nonAtomic.listDepsToLoad().size()).isEqualTo(3);
     Assertions.assertThat(nonAtomic.containsDependency(validDependency)).isTrue();
 
     Assertions.assertThat(nonAtomic.containsDiffVersionOf(validDependency)).isTrue();
