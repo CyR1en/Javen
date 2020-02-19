@@ -54,7 +54,7 @@ public class Javen {
     repositories = new Repositories();
     resolver = new URLResolver(repositories);
     libsDir = new LibDirectory(libPath.toString());
-    downloader = new JarDownloader(libsDir);
+    downloader = new JarDownloader(libsDir, resolver);
     loadedDependency = new ArrayList<>();
     classLoaders = new ArrayList<>();
     loader = new Loader(this);
@@ -78,7 +78,7 @@ public class Javen {
     need.forEach((dep, url) -> {
       if (libsDir.containsDiffVersionOf(dep))
         libsDir.deleteDifferentVersion(dep);
-      downloader.downloadJar(dep, url);
+      downloader.downloadJar(dep);
     });
   }
 

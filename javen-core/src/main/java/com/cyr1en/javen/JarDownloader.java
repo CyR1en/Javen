@@ -32,16 +32,23 @@ import me.tongfei.progressbar.ProgressBarStyle;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Objects;
+
 
 public class JarDownloader {
 
   private LibDirectory libsDir;
+  private URLResolver resolver;
 
-  public JarDownloader(LibDirectory libDir) {
+  public JarDownloader(LibDirectory libDir, URLResolver resolver) {
     this.libsDir = libDir;
+    this.resolver = resolver;
   }
 
-  public void downloadJar(Dependency dep, URL url) {
+  public void downloadJar(Dependency dep) {
+    URL url = resolver.resolve(dep);
+    if(Objects.isNull(url)) return;
+
     int size = JavenUtil.getFileSizeKB(url);
     try (BufferedInputStream inputStream = new BufferedInputStream(url.openStream());
          FileOutputStream fileOS = new FileOutputStream(new File(libsDir, dep.asJarName()));

@@ -29,7 +29,6 @@ shadowJar {
     manifest {
         attributes(
                 'Manifest-Version': '1.0',
-                'Class-Path': 'tools.jar'
         )
     }
 }

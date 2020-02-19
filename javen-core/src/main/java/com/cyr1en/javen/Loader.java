@@ -50,10 +50,7 @@ public class Loader {
   }
 
   public void prepare(Javen instance) {
-    URL resolvedTool = instance.getResolver().resolve(TOOLS_DEP);
-    if (Objects.isNull(resolvedTool))
-      throw new RuntimeException("Unable to resolve tools.jar");
-    instance.getDownloader().downloadJar(TOOLS_DEP, resolvedTool);
+    instance.getDownloader().downloadJar(TOOLS_DEP);
     if (instance.getLibsDir().containsDependency(TOOLS_DEP)) {
       String path = instance.getLibsDir().listJarFilesMatching(TOOLS_DEP)[0].getAbsolutePath();
       setAttachProp(path);
