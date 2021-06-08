@@ -25,106 +25,89 @@
 package com.cyr1en.javen;
 
 import com.cyr1en.javen.util.JavenUtil;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 
 public class Javen {
 
-  public static Logger LOGGER;
+    public static Logger LOGGER;
 
-  static {
-    LOGGER = LoggerFactory.getLogger(Javen.class);
-  }
-
-  private Repositories repositories;
-  private URLResolver resolver;
-  private LibDirectory libsDir;
-  private JarDownloader downloader;
-  private List<Dependency> loadedDependency;
-  private List<ClassLoader> classLoaders;
-  private static Loader loader;
-
-  public Javen(Path libPath) {
-    repositories = new Repositories();
-    resolver = new URLResolver(repositories);
-    libsDir = new LibDirectory(libPath.toString());
-    downloader = new JarDownloader(libsDir, resolver);
-    loadedDependency = new ArrayList<>();
-    classLoaders = new ArrayList<>();
-    loader = new Loader(this);
-  }
-
-  public static synchronized void loadDependencies(File[] files) {
-    for (File file : files)
-      loader.addJarToClassPath(file);
-  }
-
-  public synchronized void loadDependencies() {
-    downloadNeededDeps();
-    for (Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad(classLoaders.toArray(new ClassLoader[0])).entrySet()) {
-      loader.addJarToClassPath(entry.getValue());
-      loadedDependency.add(entry.getKey());
+    static {
+        LOGGER = LoggerFactory.getLogger(Javen.class);
     }
-  }
 
-  public void downloadNeededDeps() {
-    Map<Dependency, URL> need = getDepsToDownload();
-    need.forEach((dep, url) -> {
-      if (libsDir.containsDiffVersionOf(dep))
-        libsDir.deleteDifferentVersion(dep);
-      downloader.downloadJar(dep);
-    });
-  }
+    private final Repositories repositories;
+    private final LibDirectory libsDir;
+    private final List<Dependency> loadedDependency;
+    private final List<ClassLoader> classLoaders;
+    private static Loader loader;
 
-  public Map<Dependency, URL> getDepsToDownload() {
-    Map<Dependency, URL> deps = new HashMap<>();
-    JavenUtil.findAllRequestedDeps(classLoaders.toArray(new ClassLoader[0])).forEach(d -> {
-      if (!libsDir.containsDependency(d)) {
-        URL resolved = resolver.resolve(d);
-        if (resolved != null)
-          deps.put(d, resolved);
-      }
-    });
-    return deps;
-  }
+    public Javen(Path libPath) {
+        repositories = new Repositories();
+        libsDir = new LibDirectory(libPath.toString());
+        loadedDependency = new ArrayList<>();
+        classLoaders = new ArrayList<>();
+        loader = new Loader(this);
+    }
 
-  public void addRepository(Repository repository) {
-    repositories.addRepo(repository);
-  }
+    public static synchronized void loadDependencies(File[] files) {
+        for (File file : files)
+            loader.addJarToClassPath(file);
+    }
 
-  public void addRepository(String id, String url) {
-    Repository repo = new Repository(id, url);
-    addRepository(repo);
-  }
+    public synchronized void loadDependencies() {
+        resolveDependencies();
+        for (Map.Entry<Dependency, File> entry : libsDir.listDepsToLoad(classLoaders.toArray(new ClassLoader[0])).entrySet()) {
+            loader.addJarToClassPath(entry.getValue());
+            loadedDependency.add(entry.getKey());
+        }
+    }
 
-  public LibDirectory getLibsDir() {
-    return libsDir;
-  }
+    public void resolveDependencies() {
+        JavenUtil.findAllRequestedDeps(classLoaders.toArray(new ClassLoader[0])).forEach(d -> {
+            if (!libsDir.containsDependency(d)) {
+                if (libsDir.containsDiffVersionOf(d))
+                    libsDir.deleteDifferentVersion(d);
+                File file = Maven.resolver().resolve(d.getCanonicalName()).withoutTransitivity().asSingleFile();
+                if (file != null)
+                    libsDir.moveHere(file);
+            }
+        });
+    }
 
-  public Repositories getRepositories() {
-    return repositories;
-  }
+    public void addRepository(Repository repository) {
+        repositories.addRepo(repository);
+    }
 
-  public URLResolver getResolver() {
-    return this.resolver;
-  }
+    public void addRepository(String id, String url) {
+        Repository repo = new Repository(id, url);
+        addRepository(repo);
+    }
 
-  public void delegateLogger(Logger logger) {
-    LOGGER = logger;
-  }
+    public List<Dependency> getLoadedDependency() {
+        return loadedDependency;
+    }
 
-  public JarDownloader getDownloader() {
-    return this.downloader;
-  }
+    public LibDirectory getLibsDir() {
+        return libsDir;
+    }
 
-  public void addClassLoader(ClassLoader... cls) {
-    classLoaders.addAll(Arrays.asList(cls));
-  }
+    public Repositories getRepositories() {
+        return repositories;
+    }
+
+    public void delegateLogger(Logger logger) {
+        LOGGER = logger;
+    }
+
+    public void addClassLoader(ClassLoader... cls) {
+        classLoaders.addAll(Arrays.asList(cls));
+    }
 
 }

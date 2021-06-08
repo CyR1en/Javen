@@ -28,79 +28,75 @@ import java.util.Objects;
 
 public class Dependency {
 
-  private String groupId;
-  private String artifactId;
-  private String version;
-  private String directURL;
+    private final String groupId;
+    private final String artifactId;
+    private final String version;
+    private final String directURL;
 
-  public Dependency(String group, String name, String version) {
-    this(group, name, version, null);
-  }
+    public Dependency(String group, String name, String version) {
+        this(group, name, version, null);
+    }
 
-  public Dependency(String group, String name, String version, String directURL) {
-    this.groupId = group;
-    this.artifactId = name;
-    this.version = version;
-    this.directURL = directURL == null ? URLResolver.UNRESOLVED : directURL;
-  }
+    public Dependency(String group, String name, String version, String directURL) {
+        this.groupId = group;
+        this.artifactId = name;
+        this.version = version;
+        this.directURL = directURL == null ? "unresolved" : directURL;
+    }
 
-  public String asURL() {
-    StringBuilder builder = new StringBuilder();
-    String formattedGroup = groupId.replaceAll("\\.", "/");
-    String artifactName = artifactId + "-" + version;
-    builder.append(formattedGroup).append("/");
-    builder.append(artifactId).append("/");
-    builder.append(version).append("/").append(artifactName).append(".jar");
-    return builder.toString();
-  }
+    public String asURL() {
+        StringBuilder builder = new StringBuilder();
+        String formattedGroup = groupId.replaceAll("\\.", "/");
+        String artifactName = artifactId + "-" + version;
+        builder.append(formattedGroup).append("/");
+        builder.append(artifactId).append("/");
+        builder.append(version).append("/").append(artifactName).append(".jar");
+        return builder.toString();
+    }
 
-  public String asJarName() {
-    return getArtifactId() + "-" + getVersion() + ".jar";
-  }
+    public String asJarName() {
+        return getArtifactId() + "-" + getVersion() + ".jar";
+    }
 
-  public String getGroupId() {
-    return groupId;
-  }
+    public String getGroupId() {
+        return groupId;
+    }
 
-  public String getArtifactId() {
-    return artifactId;
-  }
+    public String getArtifactId() {
+        return artifactId;
+    }
 
-  public String getVersion() {
-    return version;
-  }
+    public String getVersion() {
+        return version;
+    }
 
-  public String getDirectURL() {
-    return directURL;
-  }
+    public String getCanonicalName() {
+        return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
+    }
 
-  public String getCanonicalName() {
-    return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Dependency)) return false;
+        Dependency that = (Dependency) o;
+        return Objects.equals(groupId, that.groupId) &&
+                Objects.equals(artifactId, that.artifactId) &&
+                Objects.equals(version, that.version) &&
+                Objects.equals(directURL, that.directURL);
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Dependency)) return false;
-    Dependency that = (Dependency) o;
-    return Objects.equals(groupId, that.groupId) &&
-            Objects.equals(artifactId, that.artifactId) &&
-            Objects.equals(version, that.version) &&
-            Objects.equals(directURL, that.directURL);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupId, artifactId, version);
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(groupId, artifactId, version);
-  }
-
-  @Override
-  public String toString() {
-    return "Dependency{" +
-            "groupId='" + groupId + '\'' +
-            ", artifactId='" + artifactId + '\'' +
-            ", version='" + version + '\'' +
-            ", directURL='" + directURL + '\'' +
-            '}';
-  }
+    @Override
+    public String toString() {
+        return "Dependency{" +
+                "groupId='" + groupId + '\'' +
+                ", artifactId='" + artifactId + '\'' +
+                ", version='" + version + '\'' +
+                ", directURL='" + directURL + '\'' +
+                '}';
+    }
 }
