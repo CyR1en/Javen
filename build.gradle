@@ -25,6 +25,7 @@
 subprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
+    apply plugin: 'maven-publish'
 
     group 'com.cyr1en'
     version = "1.0-SNAPSHOT"
@@ -39,4 +40,23 @@ subprojects {
     repositories {
         mavenCentral()
     }
+
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/CyR1en/Javen")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+        publications {
+            gpr(MavenPublication) {
+                from(components.java)
+            }
+        }
+    }
+
 }
