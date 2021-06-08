@@ -41,7 +41,7 @@ subprojects {
         mavenCentral()
     }
 
-    configure {
+    publishing {
         repositories {
             maven {
                 name = "GitHubPackages"
@@ -53,8 +53,8 @@ subprojects {
             }
         }
         publications {
-            register("gpr") {
-                from(components["java"])
+            gpr(MavenPublication) {
+                from(components.java)
             }
         }
     }
