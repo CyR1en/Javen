@@ -25,6 +25,7 @@
 package com.cyr1en.javen;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 import static com.cyr1en.javen.Javen.LOGGER;
 
@@ -37,39 +38,44 @@ import java.util.jar.JarFile;
 
 public class Loader {
 
-  private static final Dependency TOOLS_DEP = new Dependency("io.earcam.wrapped", "com.sun.tools.attach", "1.8.0_jdk8u172-b11");
+    private static final Dependency TOOLS_DEP = new Dependency("io.earcam.wrapped", "com.sun.tools.attach", "1.8.0_jdk8u172-b11");
 
-  public Loader(Javen instance) {
-    if (!instance.getLibsDir().containsDependency(TOOLS_DEP))
-      prepare(instance);
-    else {
-      String path = instance.getLibsDir().listJarFilesMatching(TOOLS_DEP)[0].getAbsolutePath();
-      setAttachProp(path);
+    public Loader(Javen instance) {
+        if (!instance.getLibsDir().containsDependency(TOOLS_DEP))
+            prepare(instance);
+        else {
+            String path = instance.getLibsDir().listJarFilesMatching(TOOLS_DEP)[0].getAbsolutePath();
+            setAttachProp(path);
+        }
+        ByteBuddyAgent.install(ByteBuddyAgent.AttachmentProvider.ForUserDefinedToolsJar.INSTANCE);
     }
-    ByteBuddyAgent.install(ByteBuddyAgent.AttachmentProvider.ForUserDefinedToolsJar.INSTANCE);
-  }
 
-  public void prepare(Javen instance) {
-    instance.getDownloader().downloadJar(TOOLS_DEP);
-    if (instance.getLibsDir().containsDependency(TOOLS_DEP)) {
-      String path = instance.getLibsDir().listJarFilesMatching(TOOLS_DEP)[0].getAbsolutePath();
-      setAttachProp(path);
+    public void prepare(Javen instance) {
+        getAttachTool(instance);
+        if (instance.getLibsDir().containsDependency(TOOLS_DEP)) {
+            String path = instance.getLibsDir().listJarFilesMatching(TOOLS_DEP)[0].getAbsolutePath();
+            setAttachProp(path);
+        }
     }
-  }
 
-  private void setAttachProp(String value) {
-    System.setProperty(ByteBuddyAgent.AttachmentProvider.ForUserDefinedToolsJar.PROPERTY, value);
-  }
-
-  public void addJarToClassPath(File jarFile) {
-    Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
-    if (instrumentation != null) {
-      try {
-        instrumentation.appendToSystemClassLoaderSearch(new JarFile(jarFile.getCanonicalPath()));
-        LOGGER.info("\u001b[32m" + jarFile.getName() + " loaded. \033[0m");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+    private void getAttachTool(Javen instance) {
+        File file = Maven.resolver().resolve(TOOLS_DEP.getCanonicalName()).withoutTransitivity().asSingleFile();
+        instance.getLibsDir().moveHere(file);
     }
-  }
+
+    private void setAttachProp(String value) {
+        System.setProperty(ByteBuddyAgent.AttachmentProvider.ForUserDefinedToolsJar.PROPERTY, value);
+    }
+
+    public void addJarToClassPath(File jarFile) {
+        Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
+        if (instrumentation != null) {
+            try {
+                instrumentation.appendToSystemClassLoaderSearch(new JarFile(jarFile.getCanonicalPath()));
+                LOGGER.info("\u001b[32m" + jarFile.getName() + " loaded. \033[0m");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

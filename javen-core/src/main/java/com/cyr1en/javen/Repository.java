@@ -25,6 +25,8 @@
 package com.cyr1en.javen;
 
 import com.cyr1en.javen.util.JavenUtil;
+import org.jboss.shrinkwrap.resolver.api.maven.repository.MavenRemoteRepositories;
+import org.jboss.shrinkwrap.resolver.api.maven.repository.MavenRemoteRepository;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -34,80 +36,84 @@ import static com.cyr1en.javen.Javen.LOGGER;
 
 public class Repository {
 
-  private String id;
-  private String repositoryURL;
-  private String layout;
+    private final String id;
+    private final String repositoryURL;
+    private final String layout;
 
-  public Repository(String id, String repositoryURL) {
-    this(id, repositoryURL, null);
-  }
-
-  public Repository(String id, String repositoryURL, String layout) {
-    this.id = id;
-    this.repositoryURL = prepareURL(repositoryURL);
-    this.layout = Objects.isNull(layout) ? "default" : layout;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public String getRepositoryURL() {
-    return repositoryURL;
-  }
-
-  public String getLayout() {
-    return layout;
-  }
-
-  private String prepareURL(String s) {
-    String trimmed = s.trim();
-    return trimmed.endsWith("/") ?
-            trimmed : trimmed + "/";
-  }
-
-  public boolean contains(Dependency dependency) {
-    String fullURL = getRepositoryURL() + dependency.asURL();
-    try {
-      URL url = new URL(fullURL);
-      if (JavenUtil.validURL(url))
-        return true;
-    } catch (MalformedURLException e) {
-      LOGGER.error(fullURL + " is malformed!");
+    public Repository(String id, String repositoryURL) {
+        this(id, repositoryURL, null);
     }
-    return false;
-  }
 
-  public URL getURLOf(Dependency dependency) {
-    String fullURL = getRepositoryURL() + dependency.asURL();
-    if (!contains(dependency)) return null;
-    try {
-      return new URL(fullURL);
-    } catch (MalformedURLException e) {
-      LOGGER.error(fullURL + " is malformed!");
+    public Repository(String id, String repositoryURL, String layout) {
+        this.id = id;
+        this.repositoryURL = prepareURL(repositoryURL);
+        this.layout = Objects.isNull(layout) ? "default" : layout;
     }
-    return null;
-  }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Repository)) return false;
-    Repository that = (Repository) o;
-    return Objects.equals(id, that.id) &&
-            Objects.equals(repositoryURL, that.repositoryURL);
-  }
+    public String getId() {
+        return id;
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, repositoryURL);
-  }
+    public String getRepositoryURL() {
+        return repositoryURL;
+    }
 
-  @Override
-  public String toString() {
-    return "Repository{" +
-            "id='" + id + '\'' +
-            ", repositoryURL='" + repositoryURL + '\'' +
-            '}';
-  }
+    public String getLayout() {
+        return layout;
+    }
+
+    private String prepareURL(String s) {
+        String trimmed = s.trim();
+        return trimmed.endsWith("/") ?
+                trimmed : trimmed + "/";
+    }
+
+    public boolean contains(Dependency dependency) {
+        String fullURL = getRepositoryURL() + dependency.asURL();
+        try {
+            URL url = new URL(fullURL);
+            if (JavenUtil.validURL(url))
+                return true;
+        } catch (MalformedURLException e) {
+            LOGGER.error(fullURL + " is malformed!");
+        }
+        return false;
+    }
+
+    public URL getURLOf(Dependency dependency) {
+        String fullURL = getRepositoryURL() + dependency.asURL();
+        if (!contains(dependency)) return null;
+        try {
+            return new URL(fullURL);
+        } catch (MalformedURLException e) {
+            LOGGER.error(fullURL + " is malformed!");
+        }
+        return null;
+    }
+
+    public MavenRemoteRepository asMavenRemoteRepo() {
+        return MavenRemoteRepositories.createRemoteRepository(getId(), getRepositoryURL(), getLayout());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Repository)) return false;
+        Repository that = (Repository) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(repositoryURL, that.repositoryURL);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, repositoryURL);
+    }
+
+    @Override
+    public String toString() {
+        return "Repository{" +
+                "id='" + id + '\'' +
+                ", repositoryURL='" + repositoryURL + '\'' +
+                '}';
+    }
 }

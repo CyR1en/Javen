@@ -47,79 +47,75 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JavenTest {
 
-  private Javen javen;
+    private Javen javen;
 
-  private Repository jCenterRepo;
+    private Repository jCenterRepo;
 
-  private Dependency mavenCentralTarget;
-  private Dependency jCenterTarget;
+    private Dependency mavenCentralTarget;
+    private Dependency jCenterTarget;
 
-  @Before
-  public void before() {
-    Path libsDir = Paths.get("src/test/resources/testLibDir");
+    @Before
+    public void before() {
+        Path libsDir = Paths.get("src/test/resources/testLibDir");
 
-    javen = new Javen(libsDir);
+        javen = new Javen(libsDir);
 
-    jCenterRepo = new Repository("jCenter", "https://jcenter.bintray.com/");
-    javen.addRepository(jCenterRepo);
-    mavenCentralTarget = new Dependency("com.google.guava", "guava", "27.1-jre");
-    jCenterTarget = new Dependency("net.dv8tion", "JDA", "3.8.3_462");
+        jCenterRepo = new Repository("jCenter", "https://jcenter.bintray.com/");
+        javen.addRepository(jCenterRepo);
+        mavenCentralTarget = new Dependency("com.google.guava", "guava", "27.1-jre");
 
-    if(javen.getLibsDir().containsDependency(mavenCentralTarget)) javen.getLibsDir().deleteDependency(mavenCentralTarget);
-    if(javen.getLibsDir().containsDependency(jCenterTarget)) javen.getLibsDir().deleteDependency(jCenterTarget);
-  }
+        if (javen.getLibsDir().containsDependency(mavenCentralTarget))
+            javen.getLibsDir().deleteDependency(mavenCentralTarget);
+    }
 
-  @Test
-  public void testAContainsJCenter() {
-    Assertions.assertThat(javen.getRepositories().contains(jCenterRepo)).isTrue();
-  }
+    @Test
+    public void testAContainsJCenter() {
+        Assertions.assertThat(javen.getRepositories().contains(jCenterRepo)).isTrue();
+    }
 
-  @Test
-  public void testBRequestedIsDistinct() {
-    List<Dependency> requested = JavenUtil.findAllRequestedDeps();
-    Assertions.assertThat(requested.size()).isEqualTo(3);
-  }
+    @Test
+    public void testBRequestedIsDistinct() {
+        List<Dependency> requested = JavenUtil.findAllRequestedDeps();
+        Assertions.assertThat(requested.size()).isEqualTo(2);
+    }
 
-  @Test
-  public void testCRequestedDeps() {
-    List<Dependency> requested = JavenUtil.findAllRequestedDeps();
-    Assertions.assertThat(requested.contains(mavenCentralTarget) &&
-            requested.contains(jCenterTarget)).isTrue();
-  }
+    @Test
+    public void testCRequestedDeps() {
+        List<Dependency> requested = JavenUtil.findAllRequestedDeps();
+        Assertions.assertThat(requested.contains(mavenCentralTarget)).isTrue();
+    }
 
-  @Test
-  public void testDDownloadNeededDeps() {
-    Assertions.assertThatCode(() -> javen.downloadNeededDeps()).doesNotThrowAnyException();
-    Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
-  }
+    @Test
+    public void testDDownloadNeededDeps() {
+        Assertions.assertThatCode(() -> javen.resolveDependencies()).doesNotThrowAnyException();
+        Assertions.assertThat(javen.getLibsDir().containsDependency(mavenCentralTarget)).isTrue();
+    }
 
-  @Test
-  public void testELoadDepsAfterAllTestsAreDone() {
-    Assertions.assertThatCode(() -> javen.loadDependencies()).doesNotThrowAnyException();
-    Assertions.assertThatCode(() -> {
-      String[] classesToCheck = new String[]{"net.dv8tion.jda.core.JDA", "com.cyr1en.flatdb.annotations.Table"};
-      for(String cS : classesToCheck) {
-        Class<?> c = Class.forName(cS);
-        Assertions.assertThat(c).isNotNull();
-      }
-    }).doesNotThrowAnyException();
-  }
+    @Test
+    public void testELoadDepsAfterAllTestsAreDone() {
+        Assertions.assertThatCode(() -> javen.loadDependencies()).doesNotThrowAnyException();
+        Assertions.assertThatCode(() -> {
+            String[] classesToCheck = new String[]{"com.cyr1en.flatdb.annotations.Table"};
+            for (String cS : classesToCheck) {
+                Class<?> c = Class.forName(cS);
+                Assertions.assertThat(c).isNotNull();
+            }
+        }).doesNotThrowAnyException();
+    }
 
-  @After
-  public void after() throws IOException {
-    javen.getLibsDir().deleteDependency(mavenCentralTarget);
-    javen.getLibsDir().deleteDependency(jCenterTarget);
+    @After
+    public void after() throws IOException {
+        javen.getLibsDir().deleteDependency(mavenCentralTarget);
 
-    Path backup = Paths.get("src/test/resources/backup/flatdb-1.0.4.jar");
-    Path libsDir = Paths.get("src/test/resources/testLibDir/flatdb-1.0.4.jar");
-    if (!Files.exists(libsDir))
-      Files.copy(backup, libsDir);
-  }
+        Path backup = Paths.get("src/test/resources/backup/flatdb-1.0.4.jar");
+        Path libsDir = Paths.get("src/test/resources/testLibDir/flatdb-1.0.4.jar");
+        if (!Files.exists(libsDir))
+            Files.copy(backup, libsDir);
+    }
 
-  @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
-  @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
-  @Lib(group = "net.dv8tion", name = "JDA", version = "3.8.3_462")
-  @Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
-  private class TestClass {
-  }
+    @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
+    @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
+    @Lib(group = "com.github.cyr1en", name = "FlatDB", version = "1.0.5")
+    private class TestClass {
+    }
 }

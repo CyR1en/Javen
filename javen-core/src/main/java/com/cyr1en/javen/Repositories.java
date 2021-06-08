@@ -24,21 +24,35 @@
 
 package com.cyr1en.javen;
 
-import java.util.LinkedHashSet;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
-public class Repositories extends LinkedHashSet<Repository> {
+import java.util.LinkedList;
 
-  public Repositories() {
-    super();
-    add(new Repository("maven-central", "https://repo.maven.apache.org/maven2/"));
-  }
+public class Repositories {
 
-  public void addRepo(Repository repository) {
-    add(repository);
-  }
+    private final LinkedList<Repository> repoTracker;
 
-  public void add(String id, String url) {
-    Repository repository = new Repository(id, url);
-    addRepo(repository);
-  }
+    public Repositories() {
+        Maven.configureResolver().withMavenCentralRepo(true);
+        repoTracker = new LinkedList<>();
+    }
+
+    public void addRepo(String id, String url) {
+        addRepo(id, url, null);
+    }
+
+    public void addRepo(String id, String url, String layout) {
+        Repository repository = new Repository(id, url, layout);
+        addRepo(repository);
+    }
+
+    public void addRepo(Repository repository) {
+        repoTracker.add(repository);
+        Maven.configureResolver().withRemoteRepo(repository.asMavenRemoteRepo());
+    }
+
+    public boolean contains(Repository repository) {
+        return repoTracker.contains(repository);
+    }
+
 }

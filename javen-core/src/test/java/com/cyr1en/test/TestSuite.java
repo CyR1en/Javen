@@ -30,7 +30,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         JavenTest.class,
-        URLResolverTest.class,
         LibDirectoryTest.class
 })
 public class TestSuite {
