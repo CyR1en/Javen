@@ -29,10 +29,7 @@ import com.cyr1en.javen.util.JavenUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.*;
 
 import static com.cyr1en.javen.Javen.LOGGER;
@@ -97,7 +94,7 @@ public class LibDirectory extends File {
     public void moveHere(File file) {
         String name = file.getName();
         try {
-            Path here = Path.of(this.toPath().toString(), name);
+            Path here = Paths.get(this.toPath().toString(), name);
             Files.move(file.toPath(), here, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             LOGGER.error("Unable to move " + name + " to lib dir.");
