@@ -1,4 +1,4 @@
-# Javen
+# Javen [![Java CI](https://github.com/CyR1en/Javen/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/CyR1en/Javen/actions/workflows/gradle.yml)
 A runtime maven dependency loader.
 
 ### Features
