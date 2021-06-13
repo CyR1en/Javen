@@ -28,7 +28,7 @@ dependencies {
 ## Usage
 Javen is annotation based, therefore, annotations are used to declare the dependencies that are going to be loaded by Javen.
 
-#### - Declaring dependencies to load.
+#### Declaring dependencies to load.
 `@Lib` annotation could be placed on any class (not functions or fields).
 ```java
 @Lib(group = "group", name = "artifact-id", version = "version")
@@ -36,7 +36,7 @@ private class SomeClass {
 }
 ```
 
-#### - Loading dependencies
+#### Loading dependencies
 Javen requires a lib directory where it's going to save all of the resolved artifacts.
 ```java
 public static void main(String[] args) {
@@ -46,8 +46,8 @@ public static void main(String[] args) {
 }
 ```
 
-#### - Adding repositories
-Some dependencies requires a specific remote repository (other than Maven central), luckily Javen allows you to add a remote repositry. Just make sure to add your remote repositories using `.addRepositry()` before loading the jars.
+#### Adding repositories
+Some dependencies requires a specific remote repository (other than Maven central), luckily Javen allows you to add a remote repository. Just make sure to add your remote repositories using `.addRepositry()` before loading the jars.
 ```java
 public static void main(String[] args) {
     // Initialize Javen with its lib directory being /libs
