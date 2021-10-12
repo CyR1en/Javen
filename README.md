@@ -1,4 +1,4 @@
-# Javen [![Java CI](https://github.com/CyR1en/Javen/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/CyR1en/Javen/actions/workflows/gradle.yml)
+# Javen [![Java CI](https://img.shields.io/github/workflow/status/CyR1en/javen/ci?style=for-the-badge)](https://github.com/CyR1en/Javen/actions/workflows/gradle.yml) [![Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.cyr1en.com%2Fsnapshots%2Fcom%2Fcyr1en%2Fjaven-core%2Fmaven-metadata.xml&style=for-the-badge)]()
 A runtime maven dependency loader.
 
 ### Features
@@ -12,6 +12,12 @@ A runtime maven dependency loader.
 Add Javen as a project dependency
 #### Maven
 ```xml
+<repositories>
+  <repository>
+    <url>https://repo.cyr1en.com/snapshots</url>
+  </repository>
+</repositories>
+  
 <dependency>
   <groupId>com.cyr1en</groupId>
   <artifactId>javen-core</artifactId>
@@ -20,6 +26,12 @@ Add Javen as a project dependency
 ```
 #### Gradle
 ```groovy
+repositories {
+  maven {
+    url "https://repo.cyr1en.com/snapshots"
+  }
+}
+
 dependencies {
   implementation 'com.cyr1en:javen-core:{version}'
 }
