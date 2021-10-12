@@ -17,12 +17,3 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2.2.3
-      with:
-        name: Javen
-        path: javen-core/build/libs
-    - name: Publish artifact
-      run: ./gradlew publish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
