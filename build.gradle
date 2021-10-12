@@ -44,11 +44,11 @@ subprojects {
     publishing {
         repositories {
             maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/CyR1en/Javen")
+                name = "Kakuno"
+                url = uri("https://repo.cyr1en.com/snapshots")
                 credentials {
-                    username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
+                    username = System.getenv("Kakuno-User")
+                    password = System.getenv("Kakuno-Token")
                 }
             }
         }
