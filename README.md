@@ -1,4 +1,4 @@
-# Javen [![Java CI](https://img.shields.io/github/workflow/status/CyR1en/javen/ci?style=flat-square)](https://github.com/CyR1en/Javen/actions/workflows/gradle.yml) [![Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.cyr1en.com%2Fsnapshots%2Fcom%2Fcyr1en%2Fjaven-core%2Fmaven-metadata.xml&style=flat-square)]() [![](https://img.shields.io/github/license/CyR1en/Javen?style=flat-square)](https://github.com/CyR1en/Javen/blob/master/LICENSE)
+# Javen [![Java CI](https://img.shields.io/github/workflow/status/CyR1en/javen/ci?style=flat-square)](https://github.com/CyR1en/Javen/actions/workflows/gradle.yml) [![Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.cyr1en.com%2Fsnapshots%2Fcom%2Fcyr1en%2Fjaven-core%2Fmaven-metadata.xml&style=flat-square)](https://repo.cyr1en.com/#/snapshots/com/cyr1en) [![](https://img.shields.io/github/license/CyR1en/Javen?style=flat-square)](https://github.com/CyR1en/Javen/blob/master/LICENSE)
 A runtime maven dependency loader.
 
 ### Features
